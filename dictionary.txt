@@ -1,0 +1,56 @@
+A/                  # Last command automatic repetition (fixed IPR needed)
+AT#/                # Last command automatic repetition (no fixed IPR needed)
+AT#CCID             # Read ICCID
+AT#SELINT           # Select Interface Style
+AT%E                # Line Quality Monitor And Auto Retrain Or Fallback/Fallforward
+AT&C                # AT&C[<n>] Data Carrier Detect (DCD) Control
+AT&D                # AT&D[<n>] Data Terminal Ready (DTR) Control
+AT&F                # Set to factory-defined configuration
+AT&K                # AT&K[<n>] Flow control
+AT&N                # Display Internal Phonebook Stored Numbers
+AT&P                # Default reset full profile designation
+AT&S                # AT&S[<n>] Data Set Ready (DSR) Control
+AT&V                # Display current base configuration and profile
+AT&V0               # Display current configuration and profile
+AT&V1               # S registers display
+AT&V2               # Display last connection statistics
+AT&V3               # Extended S registers display
+AT&W                # Store Current configuration
+AT&Y                # Default reset basic profile designation
+AT&Z                # Store telephone number in the wireless module internal phonebook
+AT+CGDCONT          # Define PDP Context
+AT+CGI              # Country of installation
+AT+CGREG            # GPRS Network Registration Status
+AT+CMAR             # Master reset
+AT+CREG             # Define
+AT+DS               # Data Compression
+AT+FCLASS           # Select Active Service Class
+AT+GCAP             # Capabilities list
+AT+GMI              # Manufacturer identification
+AT+GMM              # Model identification
+AT+GMR              # Revision identification
+AT+GSN              # Serial number
+AT+ICF              # DTE-Modem Character Framing
+AT+IFC              # DTE-Modem Local Flow Control
+AT+ILRR             # DTE-Modem Local Rate Reporting
+AT+IPR              # Fixed DTE Interface Rate
+AT+MS               # Modulation Selection
+ATA                 # Answer
+ATD                 # Dial
+ATE                 # ATE[<n>] Command Echo ATE0 disables command echo ATE1 enables command echo (factory default)
+ATH                 # Disconnect
+ATI                 # ATI[<n>]  Identification information
+ATO                 # Return To On Line Mode
+ATP                 # Pulse Dial
+ATQ                 # ATQ[<n>]  Quiet result codes
+ATT                 # Tone Dial
+ATV                 # ATV[<n>]  Response format
+ATX                 # ATX[<n>]  Extended result codes
+AT\Q                # AT\Q[<n>] Standard Flow Control
+AT\R                # AT\R[<n>] Ring (RI) control
+AT\V                # Single line connect message
+AT#PORTCFG          # AT#PORTCFG=<variant> Connect physical ports to Service Access Points. <Variant> 0,1,3,4,5,8,9
+AT#USBCFG           # AT#USBCFG=<N> Configure USB
+AT+CRSM             # AT+CRSM=<cmd> Restricted SIM Access (e.g. check SIM/USIM) 
+AT+CFUN            # AT+CFUN=<fun>[,<rst] Set Phone Functionality
+AT+CPIN
