@@ -35,11 +35,11 @@ logw = lambda x: logger.warn(x)
 logd = lambda x: logger.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
-HISTORY = './history.txt'
+HISTORY = os.path.join(os.path.expanduser('~'), '.pycom-history')
 
 class Pycom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
-    PROMPT_FMT     = '(%s @ %d) '
+    PROMPT_FMT     = '(%s@%d) '
     PROMPT_DEF     = '(no-conn) '
 
     commands            = {}
@@ -59,12 +59,12 @@ class Pycom(Cmd):
         if self.__is_string_empty(string):
             logd('Emtpy search string')
             for name in self.commands:
-                log('  %s: %s' % (name, self.commands [name]))
+                print('  %s: %s' % (name, self.commands [name]))
         else:
             matches = [ name for name in self.commands if (string.lower() in name) or (string.lower() in self.commands [name])]
             matches += [ name for name in self.commands if (string.upper() in name) or (string.upper() in self.commands [name])]
             for match in matches:
-                log('  %s: %s' % (match, self.commands [match]))
+                print('  %s: %s' % (match, self.commands [match]))
 
     def do_AT(self, string):
         """Send AT commands to a connected device"""
@@ -86,7 +86,7 @@ class Pycom(Cmd):
     def do_serial_info(self, string=''):
         """Print out info about the current serial connection"""
         if self.__is_valid_connection():
-            log(self.connection)
+            print(self.connection)
 
     def do_serial_open(self, string):
         """
@@ -237,10 +237,10 @@ class Pycom(Cmd):
             try:
                 if not PYTHON3:
                     logd('reading without decode')
-                    read = self.connection.rl().rstrip()
+                    read = self.connection.readline().rstrip()
                 else:
                     logd('reading with decode')
-                    read = self.connection.rl().decode().rstrip()
+                    read = self.connection.readline().decode().rstrip()
 
                 logd('got "%s"' % read)
 
@@ -285,9 +285,9 @@ class Pycom(Cmd):
         """Set the maximum number of commands that will be stored in history file"""
         set_history_length(eval(string))
 
-    def do_get_history_length(self, string):
-        """Return the current maximum number of commands stored in history file"""
-        print get_history_length()
+#    def do_get_history_length(self, string):
+#        """Return the current maximum number of commands stored in history file"""
+#        print get_history_length()
 
     def do_history(self, string):
         history_len = rl.get_current_history_length()
@@ -296,9 +296,9 @@ class Pycom(Cmd):
 
     def preloop(self):
         Cmd.preloop(self)
-        if os.path.exists('./history.txt'):
+        if os.path.exists(HISTORY):
             logd('Reading history')
-            rl.read_history_file('./history.txt')
+            rl.read_history_file(HISTORY)
 
     def postloop(self):
         self.save_history()
@@ -306,7 +306,7 @@ class Pycom(Cmd):
 
     def save_history(self):
         logd('Saving history...')
-        rl.write_history_file('./history.txt')
+        rl.write_history_file(HISTORY)
 
     def postcmd(self, stop, line):
         if self.toread:
