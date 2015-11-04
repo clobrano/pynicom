@@ -1,7 +1,9 @@
 A/                  # Last command automatic repetition (fixed IPR needed)
 AT#/                # Last command automatic repetition (no fixed IPR needed)
 AT#CCID             # Read ICCID
+AT#PORTCFG          # AT#PORTCFG=<variant> Connect physical ports to Service Access Points. <Variant> 0,1,3,4,5,8,9
 AT#SELINT           # Select Interface Style
+AT#USBCFG           # AT#USBCFG=<N> Configure USB
 AT%E                # Line Quality Monitor And Auto Retrain Or Fallback/Fallforward
 AT&C                # AT&C[<n>] Data Carrier Detect (DCD) Control
 AT&D                # AT&D[<n>] Data Terminal Ready (DTR) Control
@@ -18,11 +20,14 @@ AT&V3               # Extended S registers display
 AT&W                # Store Current configuration
 AT&Y                # Default reset basic profile designation
 AT&Z                # Store telephone number in the wireless module internal phonebook
+AT+CFUN             # AT+CFUN=<fun>[,<rst] Set Phone Functionality
 AT+CGDCONT          # Define PDP Context
 AT+CGI              # Country of installation
 AT+CGREG            # GPRS Network Registration Status
 AT+CMAR             # Master reset
+AT+CPIN             # AT+CPIN=<pin>[,<newpin>] Enter PIN
 AT+CREG             # Define
+AT+CRSM             # AT+CRSM=<cmd> Restricted SIM Access (e.g. check SIM/USIM) 
 AT+DS               # Data Compression
 AT+FCLASS           # Select Active Service Class
 AT+GCAP             # Capabilities list
@@ -49,8 +54,3 @@ ATX                 # ATX[<n>]  Extended result codes
 AT\Q                # AT\Q[<n>] Standard Flow Control
 AT\R                # AT\R[<n>] Ring (RI) control
 AT\V                # Single line connect message
-AT#PORTCFG          # AT#PORTCFG=<variant> Connect physical ports to Service Access Points. <Variant> 0,1,3,4,5,8,9
-AT#USBCFG           # AT#USBCFG=<N> Configure USB
-AT+CRSM             # AT+CRSM=<cmd> Restricted SIM Access (e.g. check SIM/USIM) 
-AT+CFUN            # AT+CFUN=<fun>[,<rst] Set Phone Functionality
-AT+CPIN
