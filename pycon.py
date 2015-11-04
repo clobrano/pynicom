@@ -13,6 +13,7 @@ from cmd import Cmd
 from docopt import docopt
 from time import sleep
 import glob
+import logging
 import os
 import readline
 import serial
@@ -25,12 +26,19 @@ try:
 except ImportError:
     color = False
 
+logger = logging.getLogger('pycon')
+logi = lambda x: logger.info(x)
+loge = lambda x: logger.error(x)
+logw = lambda x: logger.warn(x)
+logd = lambda x: logger.debug(x)
+
 PYTHON3 = sys.version_info > (2.7, 0)
 readline.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
 arguments = docopt(__doc__, version="0.1.0")
 debug = arguments ['-d'] or arguments ['--debug']
 
 if debug:
+    logger.setLevel(logging.DEBUG)
     print(arguments)
 
 class Pycom(Cmd):
@@ -525,25 +533,6 @@ def add_do_command(commands, cls):
                 setattr(cls, 'do_%s' % cmd.lower(), stub_do_func)
             else:
                 setattr(cls, 'do_%s' % cmd.upper(), stub_do_func)
-
-def logd (msg):
-    if debug:
-        print (' [D] %s' % msg)
-
-def logi (msg):
-    print (' [I] %s' % msg)
-
-def loge (msg):
-    print (' [E] %s' % msg)
-
-def logw (msg):
-    print (' [W] %s' % msg)
-
-def log (msg):
-    if color:
-        print (raffaello.paint ('%s' % msg, patterns))
-    else:
-        print ('%s' % msg)
 
 def init(arguments = {}):
     known_commands = get_commands(open('./dictionary.txt', 'r').readlines())
