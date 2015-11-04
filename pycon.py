@@ -18,7 +18,6 @@ import readline
 import serial
 import sys
 
-
 try:
     import raffaello
     color = True
@@ -27,16 +26,12 @@ except ImportError:
     color = False
 
 PYTHON3 = sys.version_info > (2.7, 0)
-
 readline.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
-
 arguments = docopt(__doc__, version="0.1.0")
-
 debug = arguments ['-d'] or arguments ['--debug']
 
 if debug:
     print(arguments)
-
 
 class Pycom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
@@ -48,11 +43,9 @@ class Pycom(Cmd):
     last_serial_read    = None
     last_serial_write   = None
     toread              = False
-    hist                = set()
     serial_conf = {'port':'/dev/ttyUSB0', 'baudrate':4800, 'bytesize':8,
             'parity':'N', 'stopbits':1, 'xonxoff':False,
             'rtscts':False, 'dsrdtr':False, 'timeout':1 }
-
 
     def do_show_dictionary(self, string = None):
         """
@@ -69,33 +62,27 @@ class Pycom(Cmd):
             for match in matches:
                 log('%s: %s' % (match, self.commands [match]))
 
-
     def do_AT(self, string):
         """Send AT commands to a connected device"""
         self.do_at(string)
 
-
     def complete_AT(self, text, line, begidx, endidx):
         return self.complete_at(text, line, begidx, endidx)
-
 
     def do_at(self, string):
         """Send AT command to a connected device."""
         if self.__is_valid_connection():
             self.serial_write('at%s' % string)
 
-
     def complete_at(self, text, line, begidx, endidx):
         #logd('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
         completions = [key [begidx:] for key in self.commands.keys() if key.lower().startswith(line.lower())]
         return completions
 
-
     def do_serial_info(self, string=''):
         """Print out info about the current serial connection"""
         if self.__is_valid_connection():
             log(self.connection)
-
 
     def do_serial_open(self, string):
         """
@@ -148,7 +135,6 @@ class Pycom(Cmd):
         if self.__is_valid_connection():
             self.prompt = self.__set_prompt()
 
-
     def complete_serial_open(self, text, line, begidx, endidx):
         """
         Autocomplete for serial_open command
@@ -169,7 +155,6 @@ class Pycom(Cmd):
 
         return completions
 
-
     def do_set_port(self, string):
         """
         Set serial device fullpath for the connection
@@ -180,7 +165,6 @@ class Pycom(Cmd):
                 self.prompt = self.__set_prompt()
             except (serial.serialutil.SerialException) as err:
                 logd(err)
-
 
     def complete_set_port(self, text, line, begidx, endidx):
         """
@@ -197,13 +181,11 @@ class Pycom(Cmd):
 
         return [path.replace(fixed, "", 1) for path in glob.glob(pattern)]
 
-
     def do_set_baudrate(self, string):
         """Set connection baud rate"""
         if self.__is_valid_connection():
             self.connection.baudrate = string
             self.prompt = self.__set_prompt()
-
 
     def complete_set_baudrate(self, text, line, begidx, endidx):
         """
@@ -212,12 +194,10 @@ class Pycom(Cmd):
         token = line [begidx : endidx + 1]
         return [rate for rate in self.STD_BAUD_RATES if rate.startswith(token)]
 
-
     def do_set_bytesize(self, string):
         """Set serial connection bytesize"""
         if self.__is_valid_connection():
             self.connection.bytesize = int(string)
-
 
     def do_set_parity(self, string):
         """Set serial connection parity"""
@@ -230,18 +210,15 @@ class Pycom(Cmd):
         """
         return ['N' 'O']
 
-
     def do_set_stopbits(self, string):
         """Set serial connection stopbits"""
         if self.__is_valid_connection():
             self.connection.stopbits = int(string)
 
-
     def do_set_timeout(self, string):
         """Set serial connection timeout"""
         if self.__is_valid_connection():
             self.connection.timeout = int(string)
-
 
     def do_serial_read(self, mode = ''):
         """Read from serial device. Press CTRL-C to interrupt it.
@@ -289,7 +266,6 @@ class Pycom(Cmd):
                 log('Keyboard interrupt')
                 break
 
-
     def complete_serial_read(self, text, line, begidx, endidx):
         """
         Autocomplete for serial_read
@@ -326,8 +302,8 @@ class Pycom(Cmd):
             self.connection.close()
             self.prompt = self.PROMPT_DEF
             self.serial_conf = {'port':'/dev/ttyUSB0', 'baudrate':4800, 'bytesize':8,
-            'parity':'N', 'stopbits':1, 'xonxoff':False,
-            'rtscts':False, 'dsrdtr':False, 'timeout':1 }
+                    'parity':'N', 'stopbits':1, 'xonxoff':False,
+                    'rtscts':False, 'dsrdtr':False, 'timeout':1 }
             log('connection closed')
 
     def do_exit(self, string=''):
@@ -336,16 +312,13 @@ class Pycom(Cmd):
         self.save_history()
         sys.exit(0)
 
-
     def do_quit(self, string=''):
         """Exit from Pycom shell"""
         self.do_serial_close()
         sys.exit(0)
 
-
     def do_shell(self, cmd):
         os.system(cmd)
-
 
     def do_help(self, string = ''):
         if '' != string:
@@ -373,12 +346,10 @@ class Pycom(Cmd):
     def complete_set_debug(self, text, line, begidx, endidx):
         completions = ['False', 'True']
 
-
     def do_nmea(self, string):
         sentence = self.__nmea_format(string)
         log('nmea > "$%s<CR><LF>"' % sentence)
         self.serial_write('$' + sentence, appendix = '\r\n')
-
 
     def complete_nmea(self, text, line, begidx, endidx):
         custom_msg = ['PMTK', 'PSRF']
@@ -387,10 +358,8 @@ class Pycom(Cmd):
         else:
             return [cmd for cmd in custom_msg if cmd.startswith(text.upper())]
 
-
     def default(self, line):
         self.__send_raw(line)
-
 
     def emptyline(self):
         """
@@ -398,7 +367,6 @@ class Pycom(Cmd):
         the expected behavior in a Shell
         """
         pass
-
 
     def serial_write(self, msg, appendix='\r'):
         try:
@@ -421,7 +389,6 @@ class Pycom(Cmd):
         except (TypeError) as err:
             loge('Could not write msg "%s": %s' % (msg, err))
 
-
     def __is_valid_connection(self):
         logd('check connection')
         retval = True
@@ -430,32 +397,26 @@ class Pycom(Cmd):
             retval = False
         return retval
 
-
     def __send_raw(self, string=''):
         """Let the user send raw messages to the serial device"""
         if self.__is_valid_connection():
             self.serial_write(string)
 
-
     def __is_string_empty(self, string):
         return (None == string or 0 == len(string))
-
 
     def __is_echo(self, string):
         retval = (string == self.last_serial_write)
         return retval
 
-
     def __set_prompt(self):
         logd(self.connection.baudrate)
         return self.PROMPT_FMT % (self.connection.port, self.connection.baudrate)
-
 
     def __nmea_format(self, message):
         checksum = self.__nmea_checksum(message)
         well_formed_message = '%s*%s' % (message, checksum)
         return well_formed_message
-
 
     def __nmea_checksum(self, message):
         checksum = 0
@@ -477,14 +438,12 @@ class Pycom(Cmd):
         else:
             loge('Highlightning not available. Raffaello module not found')
 
-
     def do_show_highlight(self, string):
         if color:
             global patterns
             log(patterns)
         else:
             loge('Highlightning not available. Raffaello module not found')
-
 
     def do_remove_highlight(self, string):
         if color:
@@ -495,9 +454,6 @@ class Pycom(Cmd):
                 log('Pattern "%s" is not highlighted' % string)
         else:
             loge('Highlightning not available. Raffaello module not found')
-
-
-
 
 
 
@@ -543,14 +499,12 @@ def get_commands(string_list):
 
     return commands
 
-
 def stub_do_func(instance, string):
     if (None == instance.connection) or (not instance.connection.isOpen()):
-       log('No serial connection established yet')
+        log('No serial connection established yet')
     else:
         cmd = '%s' % string
         instance.serial_write(cmd)
-
 
 def contains_symbols(string, symbols):
     set_sym = set(symbols)
@@ -560,7 +514,6 @@ def contains_symbols(string, symbols):
     logd('{0} contains {1}? {2}'.format(string, set_sym, retval))
 
     return retval
-
 
 def add_do_command(commands, cls):
     for cmd in commands.keys():
@@ -572,6 +525,7 @@ def add_do_command(commands, cls):
                 setattr(cls, 'do_%s' % cmd.lower(), stub_do_func)
             else:
                 setattr(cls, 'do_%s' % cmd.upper(), stub_do_func)
+
 def logd (msg):
     if debug:
         print (' [D] %s' % msg)
@@ -590,7 +544,6 @@ def log (msg):
         print (raffaello.paint ('%s' % msg, patterns))
     else:
         print ('%s' % msg)
-
 
 def init(arguments = {}):
     known_commands = get_commands(open('./dictionary.txt', 'r').readlines())
@@ -637,11 +590,9 @@ def run():
     if None != shell.connection and shell.connection.isOpen():
         shell.do_serial_close('')
 
-
 def main():
     shell = init(arguments)
     run()
-
 
 if __name__ == '__main__':
     shell = init(arguments)
