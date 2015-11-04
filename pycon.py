@@ -15,7 +15,7 @@ from time import sleep
 import glob
 import logging
 import os
-import readline
+import readline as rl
 import serial
 import sys
 
@@ -26,6 +26,8 @@ try:
 except ImportError:
     color = False
 
+rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
+
 logger = logging.getLogger('pycon')
 logi = lambda x: logger.info(x)
 loge = lambda x: logger.error(x)
@@ -33,13 +35,7 @@ logw = lambda x: logger.warn(x)
 logd = lambda x: logger.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
-readline.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
-arguments = docopt(__doc__, version="0.1.0")
-debug = arguments ['-d'] or arguments ['--debug']
-
-if debug:
-    logger.setLevel(logging.DEBUG)
-    print(arguments)
+HISTORY = './history.txt'
 
 class Pycom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
@@ -63,12 +59,12 @@ class Pycom(Cmd):
         if self.__is_string_empty(string):
             logd('Emtpy search string')
             for name in self.commands:
-                log('%s: %s' % (name, self.commands [name]))
+                log('  %s: %s' % (name, self.commands [name]))
         else:
             matches = [ name for name in self.commands if (string.lower() in name) or (string.lower() in self.commands [name])]
             matches += [ name for name in self.commands if (string.upper() in name) or (string.upper() in self.commands [name])]
             for match in matches:
-                log('%s: %s' % (match, self.commands [match]))
+                log('  %s: %s' % (match, self.commands [match]))
 
     def do_AT(self, string):
         """Send AT commands to a connected device"""
@@ -241,10 +237,10 @@ class Pycom(Cmd):
             try:
                 if not PYTHON3:
                     logd('reading without decode')
-                    read = self.connection.readline().rstrip()
+                    read = self.connection.rl().rstrip()
                 else:
                     logd('reading with decode')
-                    read = self.connection.readline().decode().rstrip()
+                    read = self.connection.rl().decode().rstrip()
 
                 logd('got "%s"' % read)
 
@@ -257,7 +253,7 @@ class Pycom(Cmd):
                         continue
                     else:
                         self.last_serial_read = read
-                        log('%s%s' % (' '*len(self.prompt), read))
+                        print('%s%s' % (' '*len(self.prompt), read))
                 elif 0 < allowed_zero_read:
                     logd('stop read counter %d' % allowed_zero_read)
                     allowed_zero_read -= 1
@@ -271,7 +267,7 @@ class Pycom(Cmd):
                 loge(error)
                 allowed_zero_read -= 1
             except KeyboardInterrupt:
-                log('Keyboard interrupt')
+                logw('Keyboard interrupt')
                 break
 
     def complete_serial_read(self, text, line, begidx, endidx):
@@ -280,14 +276,29 @@ class Pycom(Cmd):
         """
         return ['nostop']
 
+    def do_clear_history(self, string):
+        """Clear command history"""
+        logw('Clearing history')
+        rl.clear_history()
+
+    def do_set_history_length(self, string):
+        """Set the maximum number of commands that will be stored in history file"""
+        set_history_length(eval(string))
+
+    def do_get_history_length(self, string):
+        """Return the current maximum number of commands stored in history file"""
+        print get_history_length()
+
     def do_history(self, string):
-        [log(readline.get_history_item(i)) for i in range(readline.get_current_history_length())]
+        history_len = rl.get_current_history_length()
+        for i in range(history_len):
+            print(rl.get_history_item(i))
 
     def preloop(self):
         Cmd.preloop(self)
         if os.path.exists('./history.txt'):
             logd('Reading history')
-            readline.read_history_file('./history.txt')
+            rl.read_history_file('./history.txt')
 
     def postloop(self):
         self.save_history()
@@ -295,7 +306,7 @@ class Pycom(Cmd):
 
     def save_history(self):
         logd('Saving history...')
-        readline.write_history_file('./history.txt')
+        rl.write_history_file('./history.txt')
 
     def postcmd(self, stop, line):
         if self.toread:
@@ -312,7 +323,7 @@ class Pycom(Cmd):
             self.serial_conf = {'port':'/dev/ttyUSB0', 'baudrate':4800, 'bytesize':8,
                     'parity':'N', 'stopbits':1, 'xonxoff':False,
                     'rtscts':False, 'dsrdtr':False, 'timeout':1 }
-            log('connection closed')
+            logi('connection closed')
 
     def do_exit(self, string=''):
         """Exit from Pycom shell"""
@@ -341,22 +352,21 @@ class Pycom(Cmd):
         else:
             Cmd.do_help(self, string)
 
-    def do_set_debug(self, string):
-        """
-        Enable/Disable debug
-        e.g.
-            set_debug False
-            set_debug True
-        """
-        global debug
-        debug = eval(string)
+    def do_set_debug(self, string='True'):
+        """Enable/Disable debug"""
+        if 'true' == string.lower():
+            set_debug(True)
+        elif 'false' == string.lower():
+            set_debug(False)
+        else:
+            loge("Wrong argument %s (expected 'True or False')" % string)
 
     def complete_set_debug(self, text, line, begidx, endidx):
         completions = ['False', 'True']
 
     def do_nmea(self, string):
         sentence = self.__nmea_format(string)
-        log('nmea > "$%s<CR><LF>"' % sentence)
+        print('nmea > "$%s<CR><LF>"' % sentence)
         self.serial_write('$' + sentence, appendix = '\r\n')
 
     def complete_nmea(self, text, line, begidx, endidx):
@@ -401,7 +411,7 @@ class Pycom(Cmd):
         logd('check connection')
         retval = True
         if (None == self.connection) or (not self.connection.isOpen()):
-            log('No serial connection established yet')
+            logi('No serial connection established yet')
             retval = False
         return retval
 
@@ -449,7 +459,7 @@ class Pycom(Cmd):
     def do_show_highlight(self, string):
         if color:
             global patterns
-            log(patterns)
+            print(patterns)
         else:
             loge('Highlightning not available. Raffaello module not found')
 
@@ -459,7 +469,7 @@ class Pycom(Cmd):
             if string in patterns.keys():
                 del patterns [string]
             else:
-                log('Pattern "%s" is not highlighted' % string)
+                logi('Pattern "%s" is not highlighted' % string)
         else:
             loge('Highlightning not available. Raffaello module not found')
 
@@ -509,7 +519,7 @@ def get_commands(string_list):
 
 def stub_do_func(instance, string):
     if (None == instance.connection) or (not instance.connection.isOpen()):
-        log('No serial connection established yet')
+        logi('No serial connection established yet')
     else:
         cmd = '%s' % string
         instance.serial_write(cmd)
@@ -534,7 +544,19 @@ def add_do_command(commands, cls):
             else:
                 setattr(cls, 'do_%s' % cmd.upper(), stub_do_func)
 
+def run(shell):
+    """Run Pycom shell"""
+    try:
+        shell.cmdloop(__doc__)
+    except KeyboardInterrupt:
+        shell.save_history()
+        logi("Keyboard interrupt")
+
+    if None != shell.connection and shell.connection.isOpen():
+        shell.do_serial_close('')
+
 def init(arguments = {}):
+    """Initialize list of known commands and Pycom shell"""
     known_commands = get_commands(open('./dictionary.txt', 'r').readlines())
     add_do_command(known_commands, Pycom)
 
@@ -569,21 +591,28 @@ def init(arguments = {}):
 
     return shell
 
-def run():
-    try:
-        shell.cmdloop(__doc__)
-    except KeyboardInterrupt:
-        shell.save_history()
-        logi("Keyboard interrupt")
+def set_debug(debug=False):
+    if debug:
+        logger.setLevel(logging.DEBUG)
 
-    if None != shell.connection and shell.connection.isOpen():
-        shell.do_serial_close('')
+def set_history_length(length):
+    rl.set_history_length(length)
+
+def get_history_length():
+    length = rl.get_history_length()
+    if 0 > length:
+        return "No limit"
+    return length
 
 def main():
+    arguments = docopt(__doc__, version="%s" % __version__)
+    set_debug(arguments ['-d'] or arguments ['--debug'])
+
     shell = init(arguments)
-    run()
+    run(shell)
 
 if __name__ == '__main__':
-    shell = init(arguments)
-    run()
+    main()
+    #shell = init(arguments)
+    #run()
 
