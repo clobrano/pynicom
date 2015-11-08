@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """
-A Minicom like shell in python
+A Minicom like shell in Python
 author: Carlo Lobrano
 
 Usage:
     pycom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout]
 
 """
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from cmd import Cmd
 from docopt import docopt
@@ -18,6 +18,7 @@ import os
 import readline as rl
 import serial
 import sys
+import errno
 
 try:
     import raffaello
@@ -28,21 +29,35 @@ except ImportError:
 
 rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
 
-logger = logging.getLogger('pycon')
+logger = logging.getLogger('pycom')
 logi = lambda x: logger.info(x)
 loge = lambda x: logger.error(x)
 logw = lambda x: logger.warn(x)
 logd = lambda x: logger.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
-HISTORY = os.path.join(os.path.expanduser('~'), '.pycom-history')
+HOME = os.path.expanduser('~')
+PYCOMDIR = os.path.join(HOME, '.pycom')
+
+
+# Create hidden directory in HOME folder
+# to store history and dictionary files
+if not os.path.exists(PYCOMDIR):
+    try:
+        os.mkdir(PYCOMDIR)
+    except Exception as err:
+        loge('Could not create .pycom directory under %d' % PYCOMDIR)
+        sys.exit(1)
+
+HISTORY = os.path.join(PYCOMDIR, 'history')
+DICTIONARY = os.path.join(PYCOMDIR, 'dictionary')
 
 class Pycom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
-    PROMPT_FMT     = '(%s@%d) '
-    PROMPT_DEF     = '(no-conn) '
+    PROMPT_FMT = '(%s@%d) '
+    PROMPT_DEF = '(no-conn) '
 
-    commands            = {}
+    commands = {}
     connection          = None
     last_serial_read    = None
     last_serial_write   = None
@@ -557,12 +572,17 @@ def run(shell):
 
 def init(arguments = {}):
     """Initialize list of known commands and Pycom shell"""
-    known_commands = get_commands(open('./dictionary.txt', 'r').readlines())
-    add_do_command(known_commands, Pycom)
-
     shell = Pycom()
 
-    shell.commands = known_commands
+    try:
+        known_commands = get_commands(open(DICTIONARY, 'r').readlines())
+        add_do_command(known_commands, Pycom)
+        shell.commands = known_commands
+    except IOError, err:
+        if errno.ENOENT != err.errno:
+            loge('IOERROR accessing %s: %s' % (DICTIONARY, err))
+            sys.exit(1)
+
     connect_at_init = ''
 
     if arguments ['--port']:

@@ -8,7 +8,7 @@ Pynicom reproduces the behavior of Minicom, adding some utilities:
 * inline help
 * pattern highlight (optional)
 
-Autocompletion and inline help are supported by the _dictionary.txt_
+Autocompletion and inline help are supported by the _dictionary_
 file. Each entry in the file has the format
 
     command-name        # <inline-help>
@@ -21,6 +21,10 @@ file. Each entry in the file has the format
 
 Of course all the commands written in the command-line are sent to the
 serial device even if they are not in the dictionary file.
+
+_dictionary_ file is saved in an hidden _.pycom_ directory in your HOME
+folder and it is **empty** when Pycom is first installed. Feel free to
+copy the example on Pycom's project page on [GitHub](https://github.com/clobrano/pycom.git) in your own dictionary file.
 
 
 ## Installation

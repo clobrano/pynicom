@@ -1,21 +1,29 @@
 #!/usr/bin/env python
-
+import os
 from setuptools import setup, find_packages
-#from pycom import __version__
 
-setup (name = 'pycom',
-        version = "0.1.0",
-        description = 'A Minicom lik shell in Python',
-        author = 'Carlo Lobrano',
-        author_email = 'c.lobrano@gmail.com',
-        license = 'MIT',
-        py_modules = ['pycom'],
-        install_requires = ['readline', 'docopt', 'raffaello'],
-        packages = find_packages(),
-        entry_points = {'console_scripts' : 'pycom = pycom:main'},
-        include_package_data = True,
-        use_2to3 = True,
-        keywords = ['serial', 'minicom'],
-        )
+# Utility function to read the README file.
+# Used for the long_description.  It's nice, because now 1) we have a top level
+# README file and 2) it's easier to type in the README file than to put a raw
+# string in below ...
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+setup(name = 'pycom',
+       version = "0.1.0",
+       description = 'A Minicom like shell in Python',
+       long_description = read('README.md'),
+       author = 'Carlo Lobrano',
+       author_email = 'c.lobrano@gmail.com',
+       license = 'MIT',
+       py_modules = ['pycom'],
+       install_requires = ['docopt', 'raffaello'],
+       packages = find_packages(),
+       entry_points = {'console_scripts' : 'pycom = pycom:main'},
+       keywords = ['serial', 'minicom'],
+       classifiers = [
+            "Development Status :: 4 - Alpha",
+       ],
+       )
 
 
