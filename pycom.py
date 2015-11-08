@@ -10,7 +10,14 @@ Usage:
 __version__ = "0.2.0"
 
 from cmd import Cmd
-from docopt import docopt
+try:
+    # At install time setup.py tries to import
+    # __version__ from this file and fails because
+    # docopt has not been installed yet. This is
+    # a temporary trick to avoid that.
+    from docopt import docopt
+except ImportError, e:
+    pass
 from time import sleep
 import glob
 import logging
