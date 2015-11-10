@@ -4,10 +4,10 @@ A Minicom like shell in Python
 author: Carlo Lobrano
 
 Usage:
-    pycom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout]
+    pynicom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout]
 
 """
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 from cmd import Cmd
 try:
@@ -36,7 +36,7 @@ except ImportError:
 
 rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
 
-logger = logging.getLogger('pycom')
+logger = logging.getLogger('pynicom')
 logi = lambda x: logger.info(x)
 loge = lambda x: logger.error(x)
 logw = lambda x: logger.warn(x)
@@ -44,10 +44,10 @@ logd = lambda x: logger.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
 HOME = os.path.expanduser('~')
-HISTORY = os.path.join(HOME, '.pycom-history')
-DICTIONARY = os.path.join(HOME, '.pycom-dictionary')
+HISTORY = os.path.join(HOME, '.pynicom-history')
+DICTIONARY = os.path.join(HOME, '.pynicom-dictionary')
 
-class Pycom(Cmd):
+class Pynicom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
     PROMPT_FMT = '(%s@%d) '
     PROMPT_DEF = '(no-conn) '
@@ -345,13 +345,13 @@ class Pycom(Cmd):
             logi('connection closed')
 
     def do_exit(self, string=''):
-        """Exit from Pycom shell"""
+        """Exit from pynicom shell"""
         self.do_serial_close()
         self.save_history()
         sys.exit(0)
 
     def do_quit(self, string=''):
-        """Exit from Pycom shell"""
+        """Exit from pynicom shell"""
         self.do_serial_close()
         sys.exit(0)
 
@@ -564,7 +564,7 @@ def add_do_command(commands, cls):
                 setattr(cls, 'do_%s' % cmd.upper(), stub_do_func)
 
 def run(shell):
-    """Run Pycom shell"""
+    """Run pynicom shell"""
     try:
         shell.cmdloop(__doc__)
     except KeyboardInterrupt:
@@ -575,23 +575,24 @@ def run(shell):
         shell.do_serial_close('')
 
 def init(arguments = {}):
-    """Initialize list of known commands and Pycom shell"""
-    shell = Pycom()
+    """Initialize list of known commands and pynicom shell"""
+    shell = Pynicom()
 
     try:
-        logi('Loading dictionary %s' % DICTIONARY)
-        known_commands = get_commands(open(DICTIONARY, 'r').readlines())
+        if os.path.exists(DICTIONARY):
+            logi('Loading dictionary %s' % DICTIONARY)
+            known_commands = get_commands(open(DICTIONARY, 'r').readlines())
 
-        if len(known_commands) == 0:
-            logw('No commands in dictionary file %s' % DICTIONARY)
-        else:
-            add_do_command(known_commands, Pycom)
-            shell._cmd_dict = known_commands
+            if len(known_commands) == 0:
+                logw('No commands in dictionary file %s' % DICTIONARY)
+            else:
+                add_do_command(known_commands, Pynicom)
+                shell._cmd_dict = known_commands
+                logi('Dictionary loaded')
     except IOError, err:
         if errno.ENOENT != err.errno:
             loge('IOERROR accessing %s: %s' % (DICTIONARY, err))
             sys.exit(1)
-    logi('Dictionary loaded')
 
     connect_at_init = ''
 
