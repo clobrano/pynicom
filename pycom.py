@@ -7,7 +7,7 @@ Usage:
     pycom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout]
 
 """
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from cmd import Cmd
 try:
