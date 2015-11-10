@@ -23,7 +23,7 @@ setup(name = 'pycom',
        entry_points = {'console_scripts' : 'pycom = pycom:main'},
        keywords = ['serial', 'minicom'],
        classifiers = [
-            "Development Status :: 4 - Alpha",
+            "Development Status :: 4 - Beta",
        ],
        )
 
