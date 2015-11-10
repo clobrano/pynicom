@@ -1,5 +1,5 @@
 Pynicom: A Minicom like shell in Python
----------------------------------------
+=======================================
 
 Pynicom reproduces the behavior of Minicom, adding some utilities:
 
@@ -8,7 +8,7 @@ Pynicom reproduces the behavior of Minicom, adding some utilities:
 * inline help
 * pattern highlight (optional)
 
-Autocompletion and inline help are supported by the _dictionary_
+Auto-completion and inline help are available using a _dictionary_
 file. Each entry in the file has the format
 
     command-name        # <inline-help>
@@ -22,12 +22,11 @@ file. Each entry in the file has the format
 Of course all the commands written in the command-line are sent to the
 serial device even if they are not in the dictionary file.
 
-_dictionary_ file is saved in an hidden _.pycom_ directory in your HOME
-folder and it is **empty** when Pycom is first installed. Feel free to
-copy the example on Pycom's project page on [GitHub](https://github.com/clobrano/pycom.git) in your own dictionary file.
+_dictionary_ file is saved as hidden file in your HOME folder and named _.pynicom-dictionary_and it is **empty** when Pynicom is first installed. Feel free to copy the example on Pycom's project page on [GitHub](https://github.com/clobrano/pynicom.git) in your own dictionary file.
 
 
-## Installation
+Installation
+------------
 
 1. Install PyPI module manager
 
@@ -37,20 +36,19 @@ copy the example on Pycom's project page on [GitHub](https://github.com/clobrano
 
     sudo pip <module-name>
 
-Work in progress: direct installation of Pycom and its dependencies through the same PyPI
 
-## Usage
+Usage
+-----
 
-Open a Shell, move to Pycom directory and run pynicom.py script
+On GNU/Linux, Pynicom need administrative privilegies to access the serial device. On Debian/Ubuntu and derivates this can be done running the following command:
 
-    sudo python pycom.py
+    $ sudo pynicom
 
 
-## First steps
+First steps
+-----------
 
-Autocompletion is obtained with with a double tab
-
-    carlo@vbox:/media/sf_host/Downloads/pycom$ sudo python pynicom.py
+Auto-completion is obtained with with a double tab
 
     A Minicom like shell in Python3
     author: Carlo Lobrano
@@ -66,7 +64,7 @@ Autocompletion is obtained with with a double tab
     (no-conn)
 
 
-a known limitation is that the extended commands (+,&,#,...) are autocompleted after typing at least the symbol
+a known limitation is that the extended commands (+,&,#,...) are auto-completed after typing at least the symbol
 
     (/dev/ttyACM0 @ 115200) at<Tab><Tab>
     at   ate
@@ -75,8 +73,9 @@ a known limitation is that the extended commands (+,&,#,...) are autocompleted a
     (/dev/ttyACM0 @ 115200) at+
 
 
+As you could see, the prompt shows the current serial device used and the baud rate or "no-conn".
 
-To use the inline help, issue the command: 'help command-name' or '?command-name'
+To use the **inline help**, issue the command: 'help command-name' or '?command-name'
 
     (no-conn) help serial_open
 
@@ -85,12 +84,12 @@ To use the inline help, issue the command: 'help command-name' or '?command-name
        Example:
        serial_open /dev/ttyUSB0 115200 8 N 1  False False False 1
 
-       where the args are respectively: port, baudrate, bytesize, parity, stopbits, SW flow control, HW flow control RTS/CTS, HW flow control DSR/DTR, timeout
+       where the args are respectively: port, baudrate, bytesize, parity, stopbits, SW flow control, HW flow control RTS/CTS, HW flow control DSR/DTR, timeout. You do not need to give all the parameters, if you are fine with the default values, just give the serial device path.
 
 
-The connection to the serial device can be established also through pycom arguments
+The connection to the serial device can be established also with Pynicom arguments:
 
-    carlo@vbox:/media/sf_host/Downloads/pycom$ sudo python pynicom.py --port=/dev/ttyACM0 --baud=115200
+    $ sudo pynicom --port=/dev/ttyACM0 --baud=115200
 
     A Minicom like shell in Python
     author: Carlo Lobrano
@@ -102,8 +101,11 @@ The connection to the serial device can be established also through pycom argume
 
     (/dev/ttyACM0 @ 115200)
 
+To see all input arguments type
 
-Connection parameters can be changed without using `serial_close` and then `serial_open` again, using the `set_` commands
+    $ pynicom -h
+
+Connection parameters can be changed using the `set_` commands without closing and opening again the connection:
 
     (/dev/ttyACM0 @ 115200) set_
     set_baudrate  set_bytesize  set_debug     set_parity    set_port      set_stopbits  set_timeout
@@ -132,13 +134,14 @@ the special character '!' execute system's commands:
 All commands have 1 seconds timeout as default, but that can be changed with `set_timeout` command. If a command does not return, stop it with CTRL-B or CTRL-C
 
 
-## Highlight patterns
+Highlight patterns
+------------------
 
-If you have installed [Raffaello](https://pypi.python.org/pypi/raffaello/) module, the highlight feature is enabled, and you can choose a pattern to be highlighted in a choosen color (the available colors depending on the Shell)
+The [Raffaello](https://pypi.python.org/pypi/raffaello/) module allows Pynicom to highlight the text ouput. You can choose a pattern to be highlighted in a given color (the available colors depending on the Shell)
 
     (/dev/ttyUSB0 @ 9600) highlight GNRMC=>green
 
-this can be useful when reading NMEA sentences (with `serial_read`)
+this can be useful when reading NMEA sentences for example (with `serial_read`)
 
 use `show_highlight` to see the current highlighted patterns and `remove_highlight` to remove a pattern.
 
@@ -149,7 +152,8 @@ use `show_highlight` to see the current highlighted patterns and `remove_highlig
             {}
 
 
-## NMEA sentences
+NMEA sentences
+--------------
 
 Nmea sentences can be sent to the serial device using the `nmea` command. Pycom will automatically add the initial '$' symbol, the checksum and the final appendix (<CR><LF>), so that a possible usage of this API is the following:
 
