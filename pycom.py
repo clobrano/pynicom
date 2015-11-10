@@ -11,8 +11,8 @@ __version__ = "0.2.0"
 
 from cmd import Cmd
 try:
-    # At install time setup.py tries to import
-    # __version__ from this file and fails because
+    # At install time, setup.py tries to import
+    # __version__ from this file and then fails because
     # docopt has not been installed yet. This is
     # a temporary trick to avoid that.
     from docopt import docopt
@@ -44,49 +44,44 @@ logd = lambda x: logger.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
 HOME = os.path.expanduser('~')
-PYCOMDIR = os.path.join(HOME, '.pycom')
-
-
-# Create hidden directory in HOME folder
-# to store history and dictionary files
-if not os.path.exists(PYCOMDIR):
-    try:
-        os.mkdir(PYCOMDIR)
-    except Exception as err:
-        loge('Could not create .pycom directory under %d' % PYCOMDIR)
-        sys.exit(1)
-
-HISTORY = os.path.join(PYCOMDIR, 'history')
-DICTIONARY = os.path.join(PYCOMDIR, 'dictionary')
+HISTORY = os.path.join(HOME, '.pycom-history')
+DICTIONARY = os.path.join(HOME, '.pycom-dictionary')
 
 class Pycom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
     PROMPT_FMT = '(%s@%d) '
     PROMPT_DEF = '(no-conn) '
 
-    commands = {}
-    connection          = None
-    last_serial_read    = None
-    last_serial_write   = None
-    toread              = False
-    serial_conf = {'port':'/dev/ttyUSB0', 'baudrate':4800, 'bytesize':8,
+    _cmd_dict = {}
+    connection = None
+    last_serial_read = None
+    last_serial_write = None
+    toread = False
+    _port_config = {
+            'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
             'parity':'N', 'stopbits':1, 'xonxoff':False,
-            'rtscts':False, 'dsrdtr':False, 'timeout':1 }
+            'rtscts':False, 'dsrdtr':False, 'timeout':1
+            }
 
-    def do_show_dictionary(self, string = None):
+    def do_dictionary(self, string = None):
         """
         If no keyword is provided, it shows all the known commands. If a keyword
         is provided, it shows only matching known commands.
         """
         if self.__is_string_empty(string):
             logd('Emtpy search string')
-            for name in self.commands:
-                print('  %s: %s' % (name, self.commands [name]))
+            for name in self._cmd_dict:
+                print('  %s: %s' % (name, self._cmd_dict [name]))
         else:
-            matches = [ name for name in self.commands if (string.lower() in name) or (string.lower() in self.commands [name])]
-            matches += [ name for name in self.commands if (string.upper() in name) or (string.upper() in self.commands [name])]
-            for match in matches:
-                print('  %s: %s' % (match, self.commands [match]))
+            logd('Looking for "%s" in dictionary' % string)
+
+            matches = [ name for name in self._cmd_dict if (string.lower() in name.lower()) or (string.lower() in self._cmd_dict[name].lower())]
+
+            if 0 == len(matches):
+                print('No match found')
+            else:
+                for match in matches:
+                    print('  %s: %s' % (match, self._cmd_dict [match]))
 
     def do_AT(self, string):
         """Send AT commands to a connected device"""
@@ -102,7 +97,7 @@ class Pycom(Cmd):
 
     def complete_at(self, text, line, begidx, endidx):
         #logd('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
-        completions = [key [begidx:] for key in self.commands.keys() if key.lower().startswith(line.lower())]
+        completions = [key [begidx:] for key in self._cmd_dict.keys() if key.lower().startswith(line.lower())]
         return completions
 
     def do_serial_info(self, string=''):
@@ -122,37 +117,37 @@ class Pycom(Cmd):
 
         for id, arg in enumerate(string.split(' ')):
             if 0 == id:
-                self.serial_conf ['port'] = arg
+                self._port_config ['port'] = arg
             if 1 == id:
-                self.serial_conf ['baudrate'] = arg
+                self._port_config ['baudrate'] = arg
             if 2 == id:
-                self.serial_conf ['bytesize'] = int(arg)
+                self._port_config ['bytesize'] = int(arg)
             if 3 == id:
-                self.serial_conf ['parity'] = arg
+                self._port_config ['parity'] = arg
             if 4 == id:
-                self.serial_conf ['stopbits'] = int(arg)
+                self._port_config ['stopbits'] = int(arg)
             if 5 == id:
-                self.serial_conf ['xonxoff'] = eval(arg)
+                self._port_config ['xonxoff'] = eval(arg)
             if 6 == id:
-                self.serial_conf ['rtscts'] = eval(arg)
+                self._port_config ['rtscts'] = eval(arg)
             if 7 == id:
-                self.serial_conf ['dsrdtr'] = eval(arg)
+                self._port_config ['dsrdtr'] = eval(arg)
             if 8 == id:
-                self.serial_conf ['timeout'] = int(arg)
+                self._port_config ['timeout'] = int(arg)
 
-        logd('Connecting with the following params {0}.'.format(self.serial_conf))
+        logd('Connecting with the following params {0}.'.format(self._port_config))
 
         try:
             self.connection = serial.Serial(
-                    port        = self.serial_conf ['port'],
-                    baudrate    = self.serial_conf ['baudrate'],
-                    bytesize    = self.serial_conf ['bytesize'],
-                    parity      = self.serial_conf ['parity'],
-                    stopbits    = self.serial_conf ['stopbits'],
-                    xonxoff     = self.serial_conf ['xonxoff'],
-                    rtscts      = self.serial_conf ['rtscts'],
-                    dsrdtr      = self.serial_conf ['dsrdtr'],
-                    timeout     = self.serial_conf ['timeout']
+                    port        = self._port_config ['port'],
+                    baudrate    = self._port_config ['baudrate'],
+                    bytesize    = self._port_config ['bytesize'],
+                    parity      = self._port_config ['parity'],
+                    stopbits    = self._port_config ['stopbits'],
+                    xonxoff     = self._port_config ['xonxoff'],
+                    rtscts      = self._port_config ['rtscts'],
+                    dsrdtr      = self._port_config ['dsrdtr'],
+                    timeout     = self._port_config ['timeout']
                     )
 
         except (ValueError, serial.SerialException) as err:
@@ -342,9 +337,11 @@ class Pycom(Cmd):
         if self.__is_valid_connection():
             self.connection.close()
             self.prompt = self.PROMPT_DEF
-            self.serial_conf = {'port':'/dev/ttyUSB0', 'baudrate':4800, 'bytesize':8,
+            self._port_config = {
+                    'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
                     'parity':'N', 'stopbits':1, 'xonxoff':False,
-                    'rtscts':False, 'dsrdtr':False, 'timeout':1 }
+                    'rtscts':False, 'dsrdtr':False, 'timeout':1
+                    }
             logi('connection closed')
 
     def do_exit(self, string=''):
@@ -365,11 +362,11 @@ class Pycom(Cmd):
         if '' != string:
             logd('help for %s' % string)
 
-        if (string.upper() in self.commands.keys()):
-            print('\t%s' % self.commands [string.upper()])
+        if (string.upper() in self._cmd_dict.keys()):
+            print('\t%s' % self._cmd_dict [string.upper()])
 
-        elif (string.lower() in self.commands.keys()):
-            print('\t%s' % self.commands [string.lower()])
+        elif (string.lower() in self._cmd_dict.keys()):
+            print('\t%s' % self._cmd_dict [string.lower()])
 
         else:
             Cmd.do_help(self, string)
@@ -433,7 +430,7 @@ class Pycom(Cmd):
         logd('check connection')
         retval = True
         if (None == self.connection) or (not self.connection.isOpen()):
-            logi('No serial connection established yet')
+            logd('No serial connection established yet')
             retval = False
         return retval
 
@@ -582,13 +579,19 @@ def init(arguments = {}):
     shell = Pycom()
 
     try:
+        logi('Loading dictionary %s' % DICTIONARY)
         known_commands = get_commands(open(DICTIONARY, 'r').readlines())
-        add_do_command(known_commands, Pycom)
-        shell.commands = known_commands
+
+        if len(known_commands) == 0:
+            logw('No commands in dictionary file %s' % DICTIONARY)
+        else:
+            add_do_command(known_commands, Pycom)
+            shell._cmd_dict = known_commands
     except IOError, err:
         if errno.ENOENT != err.errno:
             loge('IOERROR accessing %s: %s' % (DICTIONARY, err))
             sys.exit(1)
+    logi('Dictionary loaded')
 
     connect_at_init = ''
 
