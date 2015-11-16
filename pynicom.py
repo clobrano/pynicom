@@ -7,7 +7,7 @@ Usage:
     pynicom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout] [--atcmd=atcmd]
 
 """
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 from cmd import Cmd
 try:
