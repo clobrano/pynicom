@@ -4,7 +4,7 @@ A Minicom like shell in Python
 author: Carlo Lobrano
 
 Usage:
-    pynicom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout]
+    pynicom [-d|--debug] [--port=port --baud=rate --bytesize=bytesize --parity=parity --stopbits=stopbits --sw-flow-ctrl=xonxoff --hw-rts-cts=rtscts --hw-dsr-dtr=dsrdtr --timeout=timeout] [--atcmd=atcmd]
 
 """
 __version__ = "0.3.1"
@@ -570,6 +570,9 @@ def run(shell):
     except KeyboardInterrupt:
         shell.save_history()
         logi("Keyboard interrupt")
+    except IOError, err:
+        loge(err)
+        logi("Try running with superuser privilegies")
 
     if None != shell.connection and shell.connection.isOpen():
         shell.do_serial_close('')
