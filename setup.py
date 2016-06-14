@@ -18,7 +18,7 @@ setup(name = 'pynicom',
        author_email = 'c.lobrano@gmail.com',
        license = 'MIT',
        py_modules = ['pynicom'],
-       install_requires = ['docopt', 'raffaello'],
+       install_requires = ['docopt', 'pyserial', 'raffaello'],
        packages = find_packages(),
        package_data={
              '': ['README.rst'],
