@@ -9,16 +9,8 @@ Usage:
 """
 
 from cmd import Cmd
-try:
-    # At install time, setup.py imports __version__
-    # from this file and then installation fails because
-    # the following dependencies has not been installed yet.
-    # I prefer to keep the __version__ in this file, so this
-    # is the solution.
-    from docopt import docopt
-    import serial
-except ImportError, e:
-    pass
+from docopt import docopt
+import serial
 from time import sleep
 import glob
 import logging
