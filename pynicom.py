@@ -10,11 +10,13 @@ Usage:
 
 from cmd import Cmd
 try:
-    # At install time, setup.py tries to import
-    # __version__ from this file and then fails because
-    # docopt has not been installed yet. This is
-    # a temporary trick to avoid that.
+    # At install time, setup.py imports __version__
+    # from this file and then installation fails because
+    # the following dependencies has not been installed yet.
+    # I prefer to keep the __version__ in this file, so this
+    # is the solution.
     from docopt import docopt
+    import serial
 except ImportError, e:
     pass
 from time import sleep
@@ -22,7 +24,6 @@ import glob
 import logging
 import os
 import readline as rl
-import serial
 import sys
 import errno
 
