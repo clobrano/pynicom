@@ -37,7 +37,10 @@ logd = lambda x: logger.debug(x)
 PYTHON3 = sys.version_info > (2.7, 0)
 HOME = os.path.expanduser('~')
 HISTORY = os.path.join(HOME, '.pynicom-history')
-DICTIONARY = os.path.join(HOME, '.pynicom-dictionary')
+_ROOT = os.path.abspath(os.path.dirname(__file__))
+DICTIONARY = os.path.join(_ROOT, 'data', '.pynicom-dictionary')
+
+logd('Dictionary location is "%s"' % DICTIONARY)
 
 class Pynicom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
@@ -574,7 +577,10 @@ def init(arguments = {}):
     shell = Pynicom()
 
     try:
-        if os.path.exists(DICTIONARY):
+        if not os.path.exists(DICTIONARY):
+            logw('Could not find dictionary at \'%s\'' % DICTIONARY)
+
+        else:
             logi('Loading dictionary %s' % DICTIONARY)
             known_commands = get_commands(open(DICTIONARY, 'r').readlines())
 

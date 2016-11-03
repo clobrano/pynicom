@@ -10,25 +10,23 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name = 'pynicom',
-       version = __version__,
-       description = 'A Minicom like shell in Python',
-       long_description = read('README.rst'),
-       url='https://github.com/clobrano/pynicom.git',
        author = 'Carlo Lobrano',
        author_email = 'c.lobrano@gmail.com',
-       license = 'MIT',
-       py_modules = ['pynicom'],
-       install_requires = ['docopt', 'pyserial', 'raffaello'],
-       packages = find_packages(),
-       package_data={
-             '': ['README.rst'],
-         },
-       include_package_data = True,
+       description = 'A Minicom like shell in Python',
        entry_points = {'console_scripts' : 'pynicom = pynicom:main'},
+       include_package_data = True,
+       install_requires = ['docopt', 'pyserial', 'raffaello'],
        keywords = ['serial', 'minicom'],
+       license = 'MIT',
+       long_description = read('README.rst'),
+       package_dir={'': 'src'},
+       packages = find_packages('src'),
+       py_modules = ['pynicom'],
+       url='https://github.com/clobrano/pynicom.git',
+       version = __version__,
        classifiers = [
             "Development Status :: 4 - Beta",
-       ],
+       ]
        )
 
 
