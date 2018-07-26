@@ -131,7 +131,7 @@ the special character '!' execute system's commands:
     -rwxrwx--- 1 root vboxsf  2115 lug  2 08:57 tests.py
 
 
-All commands have 1 seconds timeout as default, but that can be changed with `set_timeout` command. If a command does not return, stop it with CTRL-B or CTRL-C
+All commands have 1.0 seconds timeout as default, but that can be changed with `set_timeout` command. If a command does not return, stop it with CTRL-B or CTRL-C
 
 
 Highlight patterns

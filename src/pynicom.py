@@ -55,7 +55,7 @@ class Pynicom(Cmd):
     _port_config = {
             'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
             'parity':'N', 'stopbits':1, 'xonxoff':False,
-            'rtscts':False, 'dsrdtr':False, 'timeout':1
+            'rtscts':False, 'dsrdtr':False, 'timeout':1.0
             }
 
     def do_dictionary(self, string = None):
@@ -111,6 +111,8 @@ class Pynicom(Cmd):
         """
 
         for id, arg in enumerate(string.split(' ')):
+            if arg == '':
+                continue
             if 0 == id:
                 self._port_config ['port'] = arg
             if 1 == id:
@@ -128,7 +130,7 @@ class Pynicom(Cmd):
             if 7 == id:
                 self._port_config ['dsrdtr'] = eval(arg)
             if 8 == id:
-                self._port_config ['timeout'] = int(arg)
+                self._port_config ['timeout'] = float(arg)
 
         logd('Connecting with the following params {0}.'.format(self._port_config))
 
@@ -234,7 +236,7 @@ class Pynicom(Cmd):
     def do_set_timeout(self, string):
         """Set serial connection timeout"""
         if self.__is_valid_connection():
-            self.connection.timeout = int(string)
+            self.connection.timeout = float(string)
 
     def do_serial_read(self, mode = ''):
         """Read from serial device. Press CTRL-C to interrupt it.
@@ -335,7 +337,7 @@ class Pynicom(Cmd):
             self._port_config = {
                     'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
                     'parity':'N', 'stopbits':1, 'xonxoff':False,
-                    'rtscts':False, 'dsrdtr':False, 'timeout':1
+                    'rtscts':False, 'dsrdtr':False, 'timeout':1.0
                     }
             logi('connection closed')
 
@@ -601,20 +603,36 @@ def init(arguments = {}):
         connect_at_init += (arguments ['--port'])
     if arguments ['--baud']:
         connect_at_init += (' ' + arguments ['--baud'] )
+    else:
+        connect_at_init +=(' ')
     if arguments ['--bytesize']:
         connect_at_init += (' ' + arguments ['--bytesize'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--parity']:
         connect_at_init += (' ' + arguments ['--parity'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--stopbits']:
         connect_at_init += (' ' + arguments ['--stopbits'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--sw-flow-ctrl']:
         connect_at_init += (' ' + arguments ['--sw-flow-ctrl'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--hw-rts-cts']:
         connect_at_init += (' ' + arguments ['--hw-rts-cts'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--hw-dsr-dtr']:
         connect_at_init += (' ' + arguments ['--hw-dsr-dtr'] )
+    else:
+        connect_at_init +=(' ')        
     if arguments ['--timeout']:
         connect_at_init += (' ' + arguments ['--timeout'] )
+    else:
+        connect_at_init +=(' ')        
 
     if 0 < len(connect_at_init):
         shell.do_serial_open(connect_at_init)
