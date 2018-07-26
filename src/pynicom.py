@@ -109,7 +109,7 @@ class Pynicom(Cmd):
 
         where the args are respectively: port, baudrate, bytesize, parity, stopbits, SW flow control, HW flow control RTS/CTS, HW flow control DSR/DTR, timeout
         """
-       
+
         for id, arg in enumerate(string.split(' ')):
             if arg == '':
                 continue
