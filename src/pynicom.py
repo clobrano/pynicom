@@ -40,7 +40,7 @@ HISTORY = os.path.join(HOME, ".pynicom-history")
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 DICTIONARY = os.path.join(_ROOT, "data", ".pynicom-dictionary")
 
-LOGD('Dictionary location is "%s"' % DICTIONARY)
+LOGD('Dictionary location is "%s"', DICTIONARY)
 
 
 class Pynicom(Cmd):
@@ -92,7 +92,7 @@ class Pynicom(Cmd):
             for name in self._cmd_dict:
                 print("  %s: %s" % (name, self._cmd_dict[name]))
         else:
-            LOGD('Looking for "%s" in dictionary' % string)
+            LOGD('Looking for "%s" in dictionary', string)
 
             matches = [
                 name
@@ -120,7 +120,7 @@ class Pynicom(Cmd):
             self.serial_write("at%s" % string)
 
     def complete_at(self, text, line, begidx, endidx):
-        # LOGD('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
+        # LOGD('complete_at: %s, %s, %d, %d', text, line, begidx, endidx)
         completions = [
             key[begidx:]
             for key in self._cmd_dict.keys()
@@ -289,10 +289,10 @@ class Pynicom(Cmd):
                     LOGD("reading with decode")
                     read = self.connection.readline().decode().rstrip()
 
-                LOGD('got "%s"' % read)
+                LOGD('got "%s"', read)
 
                 if self.__is_echo(read):
-                    LOGD("Got echo (%s)" % read)
+                    LOGD("Got echo (%s)", read)
                     continue
 
                 if len(read):
@@ -306,7 +306,7 @@ class Pynicom(Cmd):
                         self.last_serial_read = read
                         print("%s%s" % (" " * len(self.prompt), read))
                 elif 0 < allowed_zero_read:
-                    LOGD("stop read counter %d" % allowed_zero_read)
+                    LOGD("stop read counter %d", allowed_zero_read)
                     allowed_zero_read -= 1
                     continue
                 else:
@@ -314,7 +314,7 @@ class Pynicom(Cmd):
                     break
 
             except (OSError, serial.serialutil.SerialException) as error:
-                LOGE("Got SerialException/OSerror (%d)" % allowed_zero_read)
+                LOGE("Got SerialException/OSerror (%d)", allowed_zero_read)
                 LOGE(error)
                 allowed_zero_read -= 1
             except KeyboardInterrupt:
@@ -400,7 +400,7 @@ class Pynicom(Cmd):
 
     def do_help(self, string=""):
         if "" != string:
-            LOGD("help for %s" % string)
+            LOGD("help for %s", string)
 
         if string.upper() in self._cmd_dict.keys():
             print("\t%s" % self._cmd_dict[string.upper()])
@@ -418,7 +418,7 @@ class Pynicom(Cmd):
         elif "false" == string.lower():
             set_debug(False)
         else:
-            LOGE("Wrong argument %s (expected 'True or False')" % string)
+            LOGE("Wrong argument %s (expected 'True or False')", string)
 
     def complete_set_debug(self, text, line, begidx, endidx):
         completions = ["False", "True"]
@@ -448,23 +448,23 @@ class Pynicom(Cmd):
     def serial_write(self, msg, appendix="\r"):
         try:
             msg_cr = msg + appendix
-            LOGD('sending: "%s"' % repr(msg_cr))
+            LOGD('sending: "%s"', repr(msg_cr))
             if not PYTHON3:
                 LOGD("No encode")
                 bytes = self.connection.write(msg_cr)
-                LOGD("wrote %d bytes" % bytes)
+                LOGD("wrote %d bytes", bytes)
             else:
                 LOGD("encode")
                 bytes = self.connection.write(msg_cr.encode())
 
             if 0 >= bytes:
-                LOGD("Wrote %d bytes" % bytes)
+                LOGD("Wrote %d bytes", bytes)
             else:
                 self.last_serial_write = msg
                 self.toread = True
 
         except (TypeError) as err:
-            LOGE('Could not write msg "%s": %s' % (msg, err))
+            LOGE('Could not write msg "%s": %s', msg, err)
 
     def __is_valid_connection(self):
         LOGD("check connection")
@@ -510,7 +510,7 @@ class Pynicom(Cmd):
                 new_entry = raffaello.parse_color_option(string)
                 PATTERNS.update(new_entry)
             except Exception as err:
-                LOGE('Could not highlight "%s". Error %s' % (string, err))
+                LOGE('Could not highlight "%s". Error %s', string, err)
 
         else:
             LOGE("Highlightning not available. Raffaello module not found")
@@ -528,7 +528,7 @@ class Pynicom(Cmd):
             if string in PATTERNS.keys():
                 del PATTERNS[string]
             else:
-                LOGI('Pattern "%s" is not highlighted' % string)
+                LOGI('Pattern "%s" is not highlighted', string)
         else:
             LOGE("Highlightning not available. Raffaello module not found")
 
@@ -545,11 +545,11 @@ def get_commands(string_list):
         if 0 == len(string):
             continue
 
-        LOGD("-- Parsing %s" % string.rstrip())
+        LOGD("-- Parsing %s", string.rstrip())
         if string.lower().startswith("at"):
 
             if None != at_cmd and 0 != len(at_cmd_doc):
-                LOGD("Adding doc %s to %s" % (at_cmd_doc, at_cmd))
+                LOGD("Adding doc %s to %s", at_cmd_doc, at_cmd)
                 commands[at_cmd] = at_cmd_doc
                 at_cmd_doc = ""
 
@@ -570,11 +570,11 @@ def get_commands(string_list):
             at_key = string[2]
             cmd = string[3:].strip()
 
-            LOGD("adding %s to dict for at%s" % (at_cmd, at_key))
+            LOGD("adding %s to dict for at%s", at_cmd, at_key)
             commands[at_cmd] = short_help.rstrip()
 
         if string.startswith("#"):
-            LOGD("Got doc for at cmd %s" % at_cmd)
+            LOGD("Got doc for at cmd %s", at_cmd)
             at_cmd_doc += string[1:]  # skip initial '#'
 
     return commands
@@ -601,7 +601,7 @@ def contains_symbols(string, symbols):
 def add_do_command(commands, cls):
     for cmd in commands.keys():
         if not contains_symbols(cmd, "+%&$\#/"):
-            LOGD("Adding %s" % cmd)
+            LOGD("Adding %s", cmd)
             setattr(cls, "do_%s" % cmd, stub_do_func)
 
             if cmd.isupper():
@@ -631,21 +631,21 @@ def init(arguments={}):
 
     try:
         if not os.path.exists(DICTIONARY):
-            LOGW("Could not find dictionary at '%s'" % DICTIONARY)
+            LOGW("Could not find dictionary at '%s'", DICTIONARY)
 
         else:
-            LOGI("Loading dictionary %s" % DICTIONARY)
+            LOGI("Loading dictionary %s", DICTIONARY)
             known_commands = get_commands(open(DICTIONARY, "r").readlines())
 
             if len(known_commands) == 0:
-                LOGW("No commands in dictionary file %s" % DICTIONARY)
+                LOGW("No commands in dictionary file %s", DICTIONARY)
             else:
                 add_do_command(known_commands, Pynicom)
                 shell._cmd_dict = known_commands
                 LOGI("Dictionary loaded")
     except IOError as err:
         if errno.ENOENT != err.errno:
-            LOGE("IOERROR accessing %s: %s" % (DICTIONARY, err))
+            LOGE("IOERROR accessing %s: %s", DICTIONARY, err)
             sys.exit(1)
 
     connect_at_init = ""
