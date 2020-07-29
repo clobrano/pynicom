@@ -20,18 +20,18 @@ import serial
 
 try:
     import raffaello
-    color = True
-    patterns = {}
+    COLOR = True
+    PATTERNS = {}
 except ImportError:
-    color = False
+    COLOR = False
 
 rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
 
-logger = logging.getLogger('pynicom')
-logi = lambda x: logger.info(x)
-loge = lambda x: logger.error(x)
-logw = lambda x: logger.warn(x)
-logd = lambda x: logger.debug(x)
+LOGGER = logging.getLogger('pynicom')
+LOGI = lambda x: LOGGER.info(x)
+LOGE = lambda x: LOGGER.error(x)
+LOGW = lambda x: LOGGER.warn(x)
+LOGD = lambda x: LOGGER.debug(x)
 
 PYTHON3 = sys.version_info > (2.7, 0)
 HOME = os.path.expanduser('~')
@@ -39,7 +39,7 @@ HISTORY = os.path.join(HOME, '.pynicom-history')
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 DICTIONARY = os.path.join(_ROOT, 'data', '.pynicom-dictionary')
 
-logd('Dictionary location is "%s"' % DICTIONARY)
+LOGD('Dictionary location is "%s"' % DICTIONARY)
 
 class Pynicom(Cmd):
     STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
@@ -63,11 +63,11 @@ class Pynicom(Cmd):
         is provided, it shows only matching known commands.
         """
         if self.__is_string_empty(string):
-            logd('Emtpy search string')
+            LOGD('Emtpy search string')
             for name in self._cmd_dict:
                 print('  %s: %s' % (name, self._cmd_dict [name]))
         else:
-            logd('Looking for "%s" in dictionary' % string)
+            LOGD('Looking for "%s" in dictionary' % string)
 
             matches = [ name for name in self._cmd_dict if (string.lower() in name.lower()) or (string.lower() in self._cmd_dict[name].lower())]
 
@@ -90,7 +90,7 @@ class Pynicom(Cmd):
             self.serial_write('at%s' % string)
 
     def complete_at(self, text, line, begidx, endidx):
-        #logd('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
+        #LOGD('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
         completions = [key [begidx:] for key in self._cmd_dict.keys() if key.lower().startswith(line.lower())]
         return completions
 
@@ -131,7 +131,7 @@ class Pynicom(Cmd):
             if 8 == id:
                 self._port_config ['timeout'] = float(arg)
 
-        logd('Connecting with the following params {0}.'.format(self._port_config))
+        LOGD('Connecting with the following params {0}.'.format(self._port_config))
 
         try:
             self.connection = serial.Serial(
@@ -147,7 +147,7 @@ class Pynicom(Cmd):
                     )
 
         except (ValueError, serial.SerialException) as err:
-            loge(err)
+            LOGE(err)
 
         if self.__is_valid_connection():
             self.prompt = self.__set_prompt()
@@ -181,7 +181,7 @@ class Pynicom(Cmd):
                 self.connection.port = string
                 self.prompt = self.__set_prompt()
             except (serial.serialutil.SerialException) as err:
-                logd(err)
+                LOGD(err)
 
     def complete_set_port(self, text, line, begidx, endidx):
         """
@@ -249,16 +249,16 @@ class Pynicom(Cmd):
         while allowed_zero_read > 0 or 'nostop' in mode:
             try:
                 if not PYTHON3:
-                    logd('reading without decode')
+                    LOGD('reading without decode')
                     read = self.connection.readline().rstrip()
                 else:
-                    logd('reading with decode')
+                    LOGD('reading with decode')
                     read = self.connection.readline().decode().rstrip()
 
-                logd('got "%s"' % read)
+                LOGD('got "%s"' % read)
 
                 if self.__is_echo(read):
-                    logd('Got echo (%s)' % read)
+                    LOGD('Got echo (%s)' % read)
                     continue
 
                 if len(read):
@@ -268,19 +268,19 @@ class Pynicom(Cmd):
                         self.last_serial_read = read
                         print('%s%s' % (' '*len(self.prompt), read))
                 elif 0 < allowed_zero_read:
-                    logd('stop read counter %d' % allowed_zero_read)
+                    LOGD('stop read counter %d' % allowed_zero_read)
                     allowed_zero_read -= 1
                     continue
                 else:
-                    logd("Nothing to read, exiting")
+                    LOGD("Nothing to read, exiting")
                     break
 
             except (OSError,serial.serialutil.SerialException) as error:
-                loge("Got SerialException/OSerror (%d)" % allowed_zero_read);
-                loge(error)
+                LOGE("Got SerialException/OSerror (%d)" % allowed_zero_read);
+                LOGE(error)
                 allowed_zero_read -= 1
             except KeyboardInterrupt:
-                logw('Keyboard interrupt')
+                LOGW('Keyboard interrupt')
                 break
 
     def complete_serial_read(self, text, line, begidx, endidx):
@@ -291,7 +291,7 @@ class Pynicom(Cmd):
 
     def do_clear_history(self, string):
         """Clear command history"""
-        logw('Clearing history')
+        LOGW('Clearing history')
         rl.clear_history()
 
     def do_set_history_length(self, string):
@@ -310,7 +310,7 @@ class Pynicom(Cmd):
     def preloop(self):
         Cmd.preloop(self)
         if os.path.exists(HISTORY):
-            logd('Reading history')
+            LOGD('Reading history')
             rl.read_history_file(HISTORY)
 
     def postloop(self):
@@ -318,7 +318,7 @@ class Pynicom(Cmd):
         Cmd.postloop(self)
 
     def save_history(self):
-        logd('Saving history...')
+        LOGD('Saving history...')
         rl.write_history_file(HISTORY)
 
     def postcmd(self, stop, line):
@@ -338,7 +338,7 @@ class Pynicom(Cmd):
                     'parity':'N', 'stopbits':1, 'xonxoff':False,
                     'rtscts':False, 'dsrdtr':False, 'timeout':1.0
                     }
-            logi('connection closed')
+            LOGI('connection closed')
 
     def do_exit(self, string=''):
         """Exit from pynicom shell"""
@@ -356,7 +356,7 @@ class Pynicom(Cmd):
 
     def do_help(self, string = ''):
         if '' != string:
-            logd('help for %s' % string)
+            LOGD('help for %s' % string)
 
         if (string.upper() in self._cmd_dict.keys()):
             print('\t%s' % self._cmd_dict [string.upper()])
@@ -374,7 +374,7 @@ class Pynicom(Cmd):
         elif 'false' == string.lower():
             set_debug(False)
         else:
-            loge("Wrong argument %s (expected 'True or False')" % string)
+            LOGE("Wrong argument %s (expected 'True or False')" % string)
 
     def complete_set_debug(self, text, line, begidx, endidx):
         completions = ['False', 'True']
@@ -404,29 +404,29 @@ class Pynicom(Cmd):
     def serial_write(self, msg, appendix='\r'):
         try:
             msg_cr = msg + appendix
-            logd('sending: "%s"' % repr(msg_cr))
+            LOGD('sending: "%s"' % repr(msg_cr))
             if not PYTHON3:
-                logd('No encode')
+                LOGD('No encode')
                 bytes = self.connection.write(msg_cr)
-                logd("wrote %d bytes" % bytes)
+                LOGD("wrote %d bytes" % bytes)
             else:
-                logd('encode')
+                LOGD('encode')
                 bytes = self.connection.write(msg_cr.encode())
 
             if 0 >= bytes:
-                logd('Wrote %d bytes' % bytes)
+                LOGD('Wrote %d bytes' % bytes)
             else:
                 self.last_serial_write = msg
                 self.toread = True
 
         except (TypeError) as err:
-            loge('Could not write msg "%s": %s' % (msg, err))
+            LOGE('Could not write msg "%s": %s' % (msg, err))
 
     def __is_valid_connection(self):
-        logd('check connection')
+        LOGD('check connection')
         retval = True
         if (None == self.connection) or (not self.connection.isOpen()):
-            logd('No serial connection established yet')
+            LOGD('No serial connection established yet')
             retval = False
         return retval
 
@@ -443,7 +443,7 @@ class Pynicom(Cmd):
         return retval
 
     def __set_prompt(self):
-        logd(self.connection.baudrate)
+        LOGD(self.connection.baudrate)
         return self.PROMPT_FMT % (self.connection.port, self.connection.baudrate)
 
     def __nmea_format(self, message):
@@ -460,39 +460,39 @@ class Pynicom(Cmd):
         return '%02X' % checksum
 
     def do_highlight(self, string):
-        if color:
-            global patterns
+        if COLOR:
+            global PATTERNS
             try:
                 new_entry = raffaello.parse_color_option(string)
-                patterns.update(new_entry)
+                PATTERNS.update(new_entry)
             except Exception as err:
-                loge('Could not highlight "%s". Error %s' % (string, err))
+                LOGE('Could not highlight "%s". Error %s' % (string, err))
 
         else:
-            loge('Highlightning not available. Raffaello module not found')
+            LOGE('Highlightning not available. Raffaello module not found')
 
     def do_show_highlight(self, string):
-        if color:
-            global patterns
-            print(patterns)
+        if COLOR:
+            global PATTERNS
+            print(PATTERNS)
         else:
-            loge('Highlightning not available. Raffaello module not found')
+            LOGE('Highlightning not available. Raffaello module not found')
 
     def do_remove_highlight(self, string):
-        if color:
-            global patterns
-            if string in patterns.keys():
-                del patterns [string]
+        if COLOR:
+            global PATTERNS
+            if string in PATTERNS.keys():
+                del PATTERNS [string]
             else:
-                logi('Pattern "%s" is not highlighted' % string)
+                LOGI('Pattern "%s" is not highlighted' % string)
         else:
-            loge('Highlightning not available. Raffaello module not found')
+            LOGE('Highlightning not available. Raffaello module not found')
 
 
 
 def get_commands(string_list):
     if 0 == len(string_list):
-        loge('No data to generate known command list')
+        LOGE('No data to generate known command list')
         return
 
     commands = {}
@@ -502,39 +502,39 @@ def get_commands(string_list):
         if 0 == len(string):
             continue
 
-        logd('-- Parsing %s' % string.rstrip())
+        LOGD('-- Parsing %s' % string.rstrip())
         if string.lower().startswith('at'):
 
             if None != at_cmd and 0 != len(at_cmd_doc):
-                logd('Adding doc %s to %s' % (at_cmd_doc, at_cmd))
+                LOGD('Adding doc %s to %s' % (at_cmd_doc, at_cmd))
                 commands [at_cmd] = at_cmd_doc
                 at_cmd_doc = ''
 
             else:
-                logd('No doc to update (at_cmd: {0}, at_cmd_doc {1})'.format(at_cmd, at_cmd_doc))
+                LOGD('No doc to update (at_cmd: {0}, at_cmd_doc {1})'.format(at_cmd, at_cmd_doc))
 
             short_help = 'no help found'
             if (' # ' in string) or (' #' in string):
-                logd('Inline short help found')
+                LOGD('Inline short help found')
                 string, short_help = string.split(' # ')
-                logd(string)
+                LOGD(string)
 
             at_cmd = string.strip()
             at_key = string [2]
             cmd = string [3:].strip()
 
-            logd('adding %s to dict for at%s' % (at_cmd, at_key))
+            LOGD('adding %s to dict for at%s' % (at_cmd, at_key))
             commands [at_cmd] = short_help.rstrip()
 
         if string.startswith('#'):
-            logd('Got doc for at cmd %s' % at_cmd)
+            LOGD('Got doc for at cmd %s' % at_cmd)
             at_cmd_doc += string [1:]   # skip initial '#'
 
     return commands
 
 def stub_do_func(instance, string):
     if (None == instance.connection) or (not instance.connection.isOpen()):
-        logi('No serial connection established yet')
+        LOGI('No serial connection established yet')
     else:
         cmd = '%s' % string
         instance.serial_write(cmd)
@@ -544,14 +544,14 @@ def contains_symbols(string, symbols):
     set_str = set(string)
 
     retval = (0 != len(set_sym.intersection(set_str)))
-    logd('{0} contains {1}? {2}'.format(string, set_sym, retval))
+    LOGD('{0} contains {1}? {2}'.format(string, set_sym, retval))
 
     return retval
 
 def add_do_command(commands, cls):
     for cmd in commands.keys():
         if not contains_symbols(cmd, '+%&$\#/'):
-            logd("Adding %s" % cmd)
+            LOGD("Adding %s" % cmd)
             setattr(cls, 'do_%s' % cmd, stub_do_func)
 
             if cmd.isupper():
@@ -565,10 +565,10 @@ def run(shell):
         shell.cmdloop(__doc__)
     except KeyboardInterrupt:
         shell.save_history()
-        logi("Keyboard interrupt")
+        LOGI("Keyboard interrupt")
     except IOError as err:
-        loge(err)
-        logi("Try running with superuser privilegies")
+        LOGE(err)
+        LOGI("Try running with superuser privilegies")
 
     if None != shell.connection and shell.connection.isOpen():
         shell.do_serial_close('')
@@ -579,21 +579,21 @@ def init(arguments = {}):
 
     try:
         if not os.path.exists(DICTIONARY):
-            logw('Could not find dictionary at \'%s\'' % DICTIONARY)
+            LOGW('Could not find dictionary at \'%s\'' % DICTIONARY)
 
         else:
-            logi('Loading dictionary %s' % DICTIONARY)
+            LOGI('Loading dictionary %s' % DICTIONARY)
             known_commands = get_commands(open(DICTIONARY, 'r').readlines())
 
             if len(known_commands) == 0:
-                logw('No commands in dictionary file %s' % DICTIONARY)
+                LOGW('No commands in dictionary file %s' % DICTIONARY)
             else:
                 add_do_command(known_commands, Pynicom)
                 shell._cmd_dict = known_commands
-                logi('Dictionary loaded')
+                LOGI('Dictionary loaded')
     except IOError as err:
         if errno.ENOENT != err.errno:
-            loge('IOERROR accessing %s: %s' % (DICTIONARY, err))
+            LOGE('IOERROR accessing %s: %s' % (DICTIONARY, err))
             sys.exit(1)
 
     connect_at_init = ''
@@ -642,7 +642,7 @@ def init(arguments = {}):
 
 def set_debug(debug=False):
     if debug:
-        logger.setLevel(logging.DEBUG)
+        LOGGER.setLevel(logging.DEBUG)
 
 def set_history_length(length):
     rl.set_history_length(length)
