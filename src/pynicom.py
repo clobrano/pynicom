@@ -608,31 +608,31 @@ def init(arguments = {}):
     if arguments ['--bytesize']:
         connect_at_init += (' ' + arguments ['--bytesize'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--parity']:
         connect_at_init += (' ' + arguments ['--parity'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--stopbits']:
         connect_at_init += (' ' + arguments ['--stopbits'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--sw-flow-ctrl']:
         connect_at_init += (' ' + arguments ['--sw-flow-ctrl'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--hw-rts-cts']:
         connect_at_init += (' ' + arguments ['--hw-rts-cts'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--hw-dsr-dtr']:
         connect_at_init += (' ' + arguments ['--hw-dsr-dtr'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
     if arguments ['--timeout']:
         connect_at_init += (' ' + arguments ['--timeout'] )
     else:
-        connect_at_init +=(' ')        
+        connect_at_init +=(' ')
 
     if 0 < len(connect_at_init):
         shell.do_serial_open(connect_at_init)
