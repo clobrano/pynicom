@@ -8,16 +8,15 @@ Usage:
 
 """
 
+import os
 from cmd import Cmd
-from docopt import docopt
-import serial
-from time import sleep
 import glob
 import logging
-import os
 import readline as rl
 import sys
 import errno
+from docopt import docopt
+import serial
 
 try:
     import raffaello
