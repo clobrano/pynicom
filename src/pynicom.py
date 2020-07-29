@@ -20,31 +20,50 @@ import serial
 
 try:
     import raffaello
+
     COLOR = True
     PATTERNS = {}
 except ImportError:
     COLOR = False
 
-rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
+rl.set_completer_delims(" \t\n\"\\'`@$><=;|&{(?+#/%")
 
-LOGGER = logging.getLogger('pynicom')
+LOGGER = logging.getLogger("pynicom")
 LOGI = LOGGER.info
 LOGE = LOGGER.error
 LOGW = LOGGER.warn
 LOGD = LOGGER.debug
 
 PYTHON3 = sys.version_info > (2.7, 0)
-HOME = os.path.expanduser('~')
-HISTORY = os.path.join(HOME, '.pynicom-history')
+HOME = os.path.expanduser("~")
+HISTORY = os.path.join(HOME, ".pynicom-history")
 _ROOT = os.path.abspath(os.path.dirname(__file__))
-DICTIONARY = os.path.join(_ROOT, 'data', '.pynicom-dictionary')
+DICTIONARY = os.path.join(_ROOT, "data", ".pynicom-dictionary")
 
 LOGD('Dictionary location is "%s"' % DICTIONARY)
 
+
 class Pynicom(Cmd):
-    STD_BAUD_RATES = ['300', '1200', '2400', '4800', '9600', '19200', '28800', '38400', '57600', '115200', '153600', '2304000', '460800', '500000', '576000', '921600']
-    PROMPT_FMT = '(%s@%d) '
-    PROMPT_DEF = '(no-conn) '
+    STD_BAUD_RATES = [
+        "300",
+        "1200",
+        "2400",
+        "4800",
+        "9600",
+        "19200",
+        "28800",
+        "38400",
+        "57600",
+        "115200",
+        "153600",
+        "2304000",
+        "460800",
+        "500000",
+        "576000",
+        "921600",
+    ]
+    PROMPT_FMT = "(%s@%d) "
+    PROMPT_DEF = "(no-conn) "
 
     _cmd_dict = {}
     connection = None
@@ -52,30 +71,41 @@ class Pynicom(Cmd):
     last_serial_write = None
     toread = False
     _port_config = {
-            'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
-            'parity':'N', 'stopbits':1, 'xonxoff':False,
-            'rtscts':False, 'dsrdtr':False, 'timeout':1.0
-            }
+        "port": "/dev/ttyUSB0",
+        "baudrate": 115200,
+        "bytesize": 8,
+        "parity": "N",
+        "stopbits": 1,
+        "xonxoff": False,
+        "rtscts": False,
+        "dsrdtr": False,
+        "timeout": 1.0,
+    }
 
-    def do_dictionary(self, string = None):
+    def do_dictionary(self, string=None):
         """
         If no keyword is provided, it shows all the known commands. If a keyword
         is provided, it shows only matching known commands.
         """
         if self.__is_string_empty(string):
-            LOGD('Emtpy search string')
+            LOGD("Emtpy search string")
             for name in self._cmd_dict:
-                print('  %s: %s' % (name, self._cmd_dict [name]))
+                print("  %s: %s" % (name, self._cmd_dict[name]))
         else:
             LOGD('Looking for "%s" in dictionary' % string)
 
-            matches = [ name for name in self._cmd_dict if (string.lower() in name.lower()) or (string.lower() in self._cmd_dict[name].lower())]
+            matches = [
+                name
+                for name in self._cmd_dict
+                if (string.lower() in name.lower())
+                or (string.lower() in self._cmd_dict[name].lower())
+            ]
 
             if 0 == len(matches):
-                print('No match found')
+                print("No match found")
             else:
                 for match in matches:
-                    print('  %s: %s' % (match, self._cmd_dict [match]))
+                    print("  %s: %s" % (match, self._cmd_dict[match]))
 
     def do_AT(self, string):
         """Send AT commands to a connected device"""
@@ -87,14 +117,18 @@ class Pynicom(Cmd):
     def do_at(self, string):
         """Send AT command to a connected device."""
         if self.__is_valid_connection():
-            self.serial_write('at%s' % string)
+            self.serial_write("at%s" % string)
 
     def complete_at(self, text, line, begidx, endidx):
-        #LOGD('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
-        completions = [key [begidx:] for key in self._cmd_dict.keys() if key.lower().startswith(line.lower())]
+        # LOGD('complete_at: %s, %s, %d, %d' % (text, line, begidx, endidx))
+        completions = [
+            key[begidx:]
+            for key in self._cmd_dict.keys()
+            if key.lower().startswith(line.lower())
+        ]
         return completions
 
-    def do_serial_info(self, string=''):
+    def do_serial_info(self, string=""):
         """Print out info about the current serial connection"""
         if self.__is_valid_connection():
             print(self.connection)
@@ -109,42 +143,42 @@ class Pynicom(Cmd):
         where the args are respectively: port, baudrate, bytesize, parity, stopbits, SW flow control, HW flow control RTS/CTS, HW flow control DSR/DTR, timeout
         """
 
-        for id, arg in enumerate(string.split(' ')):
-            if arg == '':
+        for id, arg in enumerate(string.split(" ")):
+            if arg == "":
                 continue
             if 0 == id:
-                self._port_config ['port'] = arg
+                self._port_config["port"] = arg
             if 1 == id:
-                self._port_config ['baudrate'] = arg
+                self._port_config["baudrate"] = arg
             if 2 == id:
-                self._port_config ['bytesize'] = int(arg)
+                self._port_config["bytesize"] = int(arg)
             if 3 == id:
-                self._port_config ['parity'] = arg
+                self._port_config["parity"] = arg
             if 4 == id:
-                self._port_config ['stopbits'] = int(arg)
+                self._port_config["stopbits"] = int(arg)
             if 5 == id:
-                self._port_config ['xonxoff'] = eval(arg)
+                self._port_config["xonxoff"] = eval(arg)
             if 6 == id:
-                self._port_config ['rtscts'] = eval(arg)
+                self._port_config["rtscts"] = eval(arg)
             if 7 == id:
-                self._port_config ['dsrdtr'] = eval(arg)
+                self._port_config["dsrdtr"] = eval(arg)
             if 8 == id:
-                self._port_config ['timeout'] = float(arg)
+                self._port_config["timeout"] = float(arg)
 
-        LOGD('Connecting with the following params {0}.'.format(self._port_config))
+        LOGD("Connecting with the following params {0}.".format(self._port_config))
 
         try:
             self.connection = serial.Serial(
-                    port        = self._port_config ['port'],
-                    baudrate    = self._port_config ['baudrate'],
-                    bytesize    = self._port_config ['bytesize'],
-                    parity      = self._port_config ['parity'],
-                    stopbits    = self._port_config ['stopbits'],
-                    xonxoff     = self._port_config ['xonxoff'],
-                    rtscts      = self._port_config ['rtscts'],
-                    dsrdtr      = self._port_config ['dsrdtr'],
-                    timeout     = self._port_config ['timeout']
-                    )
+                port=self._port_config["port"],
+                baudrate=self._port_config["baudrate"],
+                bytesize=self._port_config["bytesize"],
+                parity=self._port_config["parity"],
+                stopbits=self._port_config["stopbits"],
+                xonxoff=self._port_config["xonxoff"],
+                rtscts=self._port_config["rtscts"],
+                dsrdtr=self._port_config["dsrdtr"],
+                timeout=self._port_config["timeout"],
+            )
 
         except (ValueError, serial.SerialException) as err:
             LOGE(err)
@@ -156,7 +190,7 @@ class Pynicom(Cmd):
         """
         Autocomplete for serial_open command
         """
-        nargs = len(line.split(' '))
+        nargs = len(line.split(" "))
 
         if 2 == nargs:
             completions = self.complete_set_port(text, line, begidx, endidx)
@@ -190,11 +224,11 @@ class Pynicom(Cmd):
         before_arg = line.rfind(" ", 0, begidx)
 
         if -1 == before_arg:
-            return # arg not found
+            return  # arg not found
 
-        fixed   = line [before_arg + 1 : begidx]  # fixed portion of the arg
-        arg     = line [before_arg + 1 : endidx]
-        pattern = arg + '*'
+        fixed = line[before_arg + 1 : begidx]  # fixed portion of the arg
+        arg = line[before_arg + 1 : endidx]
+        pattern = arg + "*"
 
         return [path.replace(fixed, "", 1) for path in glob.glob(pattern)]
 
@@ -208,7 +242,7 @@ class Pynicom(Cmd):
         """
         Autocomplete for set_baudrate command
         """
-        token = line [begidx : endidx + 1]
+        token = line[begidx : endidx + 1]
         return [rate for rate in self.STD_BAUD_RATES if rate.startswith(token)]
 
     def do_set_bytesize(self, string):
@@ -225,7 +259,7 @@ class Pynicom(Cmd):
         """
         Autocomplete for set_parity command
         """
-        return ['N' 'O']
+        return ["N" "O"]
 
     def do_set_stopbits(self, string):
         """Set serial connection stopbits"""
@@ -237,7 +271,7 @@ class Pynicom(Cmd):
         if self.__is_valid_connection():
             self.connection.timeout = float(string)
 
-    def do_serial_read(self, mode = ''):
+    def do_serial_read(self, mode=""):
         """Read from serial device. Press CTRL-C to interrupt it.
 
         Keyword arguments:
@@ -246,61 +280,65 @@ class Pynicom(Cmd):
 
         allowed_zero_read = 3
 
-        while allowed_zero_read > 0 or 'nostop' in mode:
+        while allowed_zero_read > 0 or "nostop" in mode:
             try:
                 if not PYTHON3:
-                    LOGD('reading without decode')
+                    LOGD("reading without decode")
                     read = self.connection.readline().rstrip()
                 else:
-                    LOGD('reading with decode')
+                    LOGD("reading with decode")
                     read = self.connection.readline().decode().rstrip()
 
                 LOGD('got "%s"' % read)
 
                 if self.__is_echo(read):
-                    LOGD('Got echo (%s)' % read)
+                    LOGD("Got echo (%s)" % read)
                     continue
 
                 if len(read):
-                    if None != self.last_serial_write and self.last_serial_write.lower() != 'at' and 'OK' == read:
+                    if (
+                        None != self.last_serial_write
+                        and self.last_serial_write.lower() != "at"
+                        and "OK" == read
+                    ):
                         continue
                     else:
                         self.last_serial_read = read
-                        print('%s%s' % (' '*len(self.prompt), read))
+                        print("%s%s" % (" " * len(self.prompt), read))
                 elif 0 < allowed_zero_read:
-                    LOGD('stop read counter %d' % allowed_zero_read)
+                    LOGD("stop read counter %d" % allowed_zero_read)
                     allowed_zero_read -= 1
                     continue
                 else:
                     LOGD("Nothing to read, exiting")
                     break
 
-            except (OSError,serial.serialutil.SerialException) as error:
-                LOGE("Got SerialException/OSerror (%d)" % allowed_zero_read);
+            except (OSError, serial.serialutil.SerialException) as error:
+                LOGE("Got SerialException/OSerror (%d)" % allowed_zero_read)
                 LOGE(error)
                 allowed_zero_read -= 1
             except KeyboardInterrupt:
-                LOGW('Keyboard interrupt')
+                LOGW("Keyboard interrupt")
                 break
 
     def complete_serial_read(self, text, line, begidx, endidx):
         """
         Autocomplete for serial_read
         """
-        return ['nostop']
+        return ["nostop"]
 
     def do_clear_history(self, string):
         """Clear command history"""
-        LOGW('Clearing history')
+        LOGW("Clearing history")
         rl.clear_history()
 
     def do_set_history_length(self, string):
         """Set the maximum number of commands that will be stored in history file"""
         set_history_length(eval(string))
 
-#    def do_get_history_length(self, string):
-#        """Return the current maximum number of commands stored in history file"""
-#        print get_history_length()
+    #    def do_get_history_length(self, string):
+    #        """Return the current maximum number of commands stored in history file"""
+    #        print get_history_length()
 
     def do_history(self, string):
         history_len = rl.get_current_history_length()
@@ -310,7 +348,7 @@ class Pynicom(Cmd):
     def preloop(self):
         Cmd.preloop(self)
         if os.path.exists(HISTORY):
-            LOGD('Reading history')
+            LOGD("Reading history")
             rl.read_history_file(HISTORY)
 
     def postloop(self):
@@ -318,35 +356,41 @@ class Pynicom(Cmd):
         Cmd.postloop(self)
 
     def save_history(self):
-        LOGD('Saving history...')
+        LOGD("Saving history...")
         rl.write_history_file(HISTORY)
 
     def postcmd(self, stop, line):
         if self.toread:
-            self.do_serial_read('')
+            self.do_serial_read("")
             self.toread = False
         return stop
 
-    def do_serial_close(self, string=''):
+    def do_serial_close(self, string=""):
         """Close serial connection (if any)"""
 
         if self.__is_valid_connection():
             self.connection.close()
             self.prompt = self.PROMPT_DEF
             self._port_config = {
-                    'port':'/dev/ttyUSB0', 'baudrate':115200, 'bytesize':8,
-                    'parity':'N', 'stopbits':1, 'xonxoff':False,
-                    'rtscts':False, 'dsrdtr':False, 'timeout':1.0
-                    }
-            LOGI('connection closed')
+                "port": "/dev/ttyUSB0",
+                "baudrate": 115200,
+                "bytesize": 8,
+                "parity": "N",
+                "stopbits": 1,
+                "xonxoff": False,
+                "rtscts": False,
+                "dsrdtr": False,
+                "timeout": 1.0,
+            }
+            LOGI("connection closed")
 
-    def do_exit(self, string=''):
+    def do_exit(self, string=""):
         """Exit from pynicom shell"""
         self.do_serial_close()
         self.save_history()
         sys.exit(0)
 
-    def do_quit(self, string=''):
+    def do_quit(self, string=""):
         """Exit from pynicom shell"""
         self.do_serial_close()
         sys.exit(0)
@@ -354,38 +398,38 @@ class Pynicom(Cmd):
     def do_shell(self, cmd):
         os.system(cmd)
 
-    def do_help(self, string = ''):
-        if '' != string:
-            LOGD('help for %s' % string)
+    def do_help(self, string=""):
+        if "" != string:
+            LOGD("help for %s" % string)
 
-        if (string.upper() in self._cmd_dict.keys()):
-            print('\t%s' % self._cmd_dict [string.upper()])
+        if string.upper() in self._cmd_dict.keys():
+            print("\t%s" % self._cmd_dict[string.upper()])
 
-        elif (string.lower() in self._cmd_dict.keys()):
-            print('\t%s' % self._cmd_dict [string.lower()])
+        elif string.lower() in self._cmd_dict.keys():
+            print("\t%s" % self._cmd_dict[string.lower()])
 
         else:
             Cmd.do_help(self, string)
 
-    def do_set_debug(self, string='True'):
+    def do_set_debug(self, string="True"):
         """Enable/Disable debug"""
-        if 'true' == string.lower():
+        if "true" == string.lower():
             set_debug(True)
-        elif 'false' == string.lower():
+        elif "false" == string.lower():
             set_debug(False)
         else:
             LOGE("Wrong argument %s (expected 'True or False')" % string)
 
     def complete_set_debug(self, text, line, begidx, endidx):
-        completions = ['False', 'True']
+        completions = ["False", "True"]
 
     def do_nmea(self, string):
         sentence = self.__nmea_format(string)
         print('nmea > "$%s<CR><LF>"' % sentence)
-        self.serial_write('$' + sentence, appendix = '\r\n')
+        self.serial_write("$" + sentence, appendix="\r\n")
 
     def complete_nmea(self, text, line, begidx, endidx):
-        custom_msg = ['PMTK', 'PSRF']
+        custom_msg = ["PMTK", "PSRF"]
         if 0 >= len(text):
             return custom_msg
         else:
@@ -401,20 +445,20 @@ class Pynicom(Cmd):
         """
         pass
 
-    def serial_write(self, msg, appendix='\r'):
+    def serial_write(self, msg, appendix="\r"):
         try:
             msg_cr = msg + appendix
             LOGD('sending: "%s"' % repr(msg_cr))
             if not PYTHON3:
-                LOGD('No encode')
+                LOGD("No encode")
                 bytes = self.connection.write(msg_cr)
                 LOGD("wrote %d bytes" % bytes)
             else:
-                LOGD('encode')
+                LOGD("encode")
                 bytes = self.connection.write(msg_cr.encode())
 
             if 0 >= bytes:
-                LOGD('Wrote %d bytes' % bytes)
+                LOGD("Wrote %d bytes" % bytes)
             else:
                 self.last_serial_write = msg
                 self.toread = True
@@ -423,23 +467,23 @@ class Pynicom(Cmd):
             LOGE('Could not write msg "%s": %s' % (msg, err))
 
     def __is_valid_connection(self):
-        LOGD('check connection')
+        LOGD("check connection")
         retval = True
         if (None == self.connection) or (not self.connection.isOpen()):
-            LOGD('No serial connection established yet')
+            LOGD("No serial connection established yet")
             retval = False
         return retval
 
-    def __send_raw(self, string=''):
+    def __send_raw(self, string=""):
         """Let the user send raw messages to the serial device"""
         if self.__is_valid_connection():
             self.serial_write(string)
 
     def __is_string_empty(self, string):
-        return (None == string or 0 == len(string))
+        return None == string or 0 == len(string)
 
     def __is_echo(self, string):
-        retval = (string == self.last_serial_write)
+        retval = string == self.last_serial_write
         return retval
 
     def __set_prompt(self):
@@ -448,7 +492,7 @@ class Pynicom(Cmd):
 
     def __nmea_format(self, message):
         checksum = self.__nmea_checksum(message)
-        well_formed_message = '%s*%s' % (message, checksum)
+        well_formed_message = "%s*%s" % (message, checksum)
         return well_formed_message
 
     def __nmea_checksum(self, message):
@@ -457,7 +501,7 @@ class Pynicom(Cmd):
         for c in message:
             checksum ^= ord(c)
 
-        return '%02X' % checksum
+        return "%02X" % checksum
 
     def do_highlight(self, string):
         if COLOR:
@@ -469,95 +513,102 @@ class Pynicom(Cmd):
                 LOGE('Could not highlight "%s". Error %s' % (string, err))
 
         else:
-            LOGE('Highlightning not available. Raffaello module not found')
+            LOGE("Highlightning not available. Raffaello module not found")
 
     def do_show_highlight(self, string):
         if COLOR:
             global PATTERNS
             print(PATTERNS)
         else:
-            LOGE('Highlightning not available. Raffaello module not found')
+            LOGE("Highlightning not available. Raffaello module not found")
 
     def do_remove_highlight(self, string):
         if COLOR:
             global PATTERNS
             if string in PATTERNS.keys():
-                del PATTERNS [string]
+                del PATTERNS[string]
             else:
                 LOGI('Pattern "%s" is not highlighted' % string)
         else:
-            LOGE('Highlightning not available. Raffaello module not found')
-
+            LOGE("Highlightning not available. Raffaello module not found")
 
 
 def get_commands(string_list):
     if 0 == len(string_list):
-        LOGE('No data to generate known command list')
+        LOGE("No data to generate known command list")
         return
 
     commands = {}
     at_cmd = None
-    at_cmd_doc = ''
+    at_cmd_doc = ""
     for string in string_list:
         if 0 == len(string):
             continue
 
-        LOGD('-- Parsing %s' % string.rstrip())
-        if string.lower().startswith('at'):
+        LOGD("-- Parsing %s" % string.rstrip())
+        if string.lower().startswith("at"):
 
             if None != at_cmd and 0 != len(at_cmd_doc):
-                LOGD('Adding doc %s to %s' % (at_cmd_doc, at_cmd))
-                commands [at_cmd] = at_cmd_doc
-                at_cmd_doc = ''
+                LOGD("Adding doc %s to %s" % (at_cmd_doc, at_cmd))
+                commands[at_cmd] = at_cmd_doc
+                at_cmd_doc = ""
 
             else:
-                LOGD('No doc to update (at_cmd: {0}, at_cmd_doc {1})'.format(at_cmd, at_cmd_doc))
+                LOGD(
+                    "No doc to update (at_cmd: {0}, at_cmd_doc {1})".format(
+                        at_cmd, at_cmd_doc
+                    )
+                )
 
-            short_help = 'no help found'
-            if (' # ' in string) or (' #' in string):
-                LOGD('Inline short help found')
-                string, short_help = string.split(' # ')
+            short_help = "no help found"
+            if (" # " in string) or (" #" in string):
+                LOGD("Inline short help found")
+                string, short_help = string.split(" # ")
                 LOGD(string)
 
             at_cmd = string.strip()
-            at_key = string [2]
-            cmd = string [3:].strip()
+            at_key = string[2]
+            cmd = string[3:].strip()
 
-            LOGD('adding %s to dict for at%s' % (at_cmd, at_key))
-            commands [at_cmd] = short_help.rstrip()
+            LOGD("adding %s to dict for at%s" % (at_cmd, at_key))
+            commands[at_cmd] = short_help.rstrip()
 
-        if string.startswith('#'):
-            LOGD('Got doc for at cmd %s' % at_cmd)
-            at_cmd_doc += string [1:]   # skip initial '#'
+        if string.startswith("#"):
+            LOGD("Got doc for at cmd %s" % at_cmd)
+            at_cmd_doc += string[1:]  # skip initial '#'
 
     return commands
 
+
 def stub_do_func(instance, string):
     if (None == instance.connection) or (not instance.connection.isOpen()):
-        LOGI('No serial connection established yet')
+        LOGI("No serial connection established yet")
     else:
-        cmd = '%s' % string
+        cmd = "%s" % string
         instance.serial_write(cmd)
+
 
 def contains_symbols(string, symbols):
     set_sym = set(symbols)
     set_str = set(string)
 
-    retval = (0 != len(set_sym.intersection(set_str)))
-    LOGD('{0} contains {1}? {2}'.format(string, set_sym, retval))
+    retval = 0 != len(set_sym.intersection(set_str))
+    LOGD("{0} contains {1}? {2}".format(string, set_sym, retval))
 
     return retval
 
+
 def add_do_command(commands, cls):
     for cmd in commands.keys():
-        if not contains_symbols(cmd, '+%&$\#/'):
+        if not contains_symbols(cmd, "+%&$\#/"):
             LOGD("Adding %s" % cmd)
-            setattr(cls, 'do_%s' % cmd, stub_do_func)
+            setattr(cls, "do_%s" % cmd, stub_do_func)
 
             if cmd.isupper():
-                setattr(cls, 'do_%s' % cmd.lower(), stub_do_func)
+                setattr(cls, "do_%s" % cmd.lower(), stub_do_func)
             else:
-                setattr(cls, 'do_%s' % cmd.upper(), stub_do_func)
+                setattr(cls, "do_%s" % cmd.upper(), stub_do_func)
+
 
 def run(shell):
     """Run pynicom shell"""
@@ -571,67 +622,68 @@ def run(shell):
         LOGI("Try running with superuser privilegies")
 
     if None != shell.connection and shell.connection.isOpen():
-        shell.do_serial_close('')
+        shell.do_serial_close("")
 
-def init(arguments = {}):
+
+def init(arguments={}):
     """Initialize list of known commands and pynicom shell"""
     shell = Pynicom()
 
     try:
         if not os.path.exists(DICTIONARY):
-            LOGW('Could not find dictionary at \'%s\'' % DICTIONARY)
+            LOGW("Could not find dictionary at '%s'" % DICTIONARY)
 
         else:
-            LOGI('Loading dictionary %s' % DICTIONARY)
-            known_commands = get_commands(open(DICTIONARY, 'r').readlines())
+            LOGI("Loading dictionary %s" % DICTIONARY)
+            known_commands = get_commands(open(DICTIONARY, "r").readlines())
 
             if len(known_commands) == 0:
-                LOGW('No commands in dictionary file %s' % DICTIONARY)
+                LOGW("No commands in dictionary file %s" % DICTIONARY)
             else:
                 add_do_command(known_commands, Pynicom)
                 shell._cmd_dict = known_commands
-                LOGI('Dictionary loaded')
+                LOGI("Dictionary loaded")
     except IOError as err:
         if errno.ENOENT != err.errno:
-            LOGE('IOERROR accessing %s: %s' % (DICTIONARY, err))
+            LOGE("IOERROR accessing %s: %s" % (DICTIONARY, err))
             sys.exit(1)
 
-    connect_at_init = ''
+    connect_at_init = ""
 
-    if arguments ['--port']:
-        connect_at_init += (arguments ['--port'])
-    if arguments ['--baud']:
-        connect_at_init += (' ' + arguments ['--baud'] )
+    if arguments["--port"]:
+        connect_at_init += arguments["--port"]
+    if arguments["--baud"]:
+        connect_at_init += " " + arguments["--baud"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--bytesize']:
-        connect_at_init += (' ' + arguments ['--bytesize'] )
+        connect_at_init += " "
+    if arguments["--bytesize"]:
+        connect_at_init += " " + arguments["--bytesize"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--parity']:
-        connect_at_init += (' ' + arguments ['--parity'] )
+        connect_at_init += " "
+    if arguments["--parity"]:
+        connect_at_init += " " + arguments["--parity"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--stopbits']:
-        connect_at_init += (' ' + arguments ['--stopbits'] )
+        connect_at_init += " "
+    if arguments["--stopbits"]:
+        connect_at_init += " " + arguments["--stopbits"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--sw-flow-ctrl']:
-        connect_at_init += (' ' + arguments ['--sw-flow-ctrl'] )
+        connect_at_init += " "
+    if arguments["--sw-flow-ctrl"]:
+        connect_at_init += " " + arguments["--sw-flow-ctrl"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--hw-rts-cts']:
-        connect_at_init += (' ' + arguments ['--hw-rts-cts'] )
+        connect_at_init += " "
+    if arguments["--hw-rts-cts"]:
+        connect_at_init += " " + arguments["--hw-rts-cts"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--hw-dsr-dtr']:
-        connect_at_init += (' ' + arguments ['--hw-dsr-dtr'] )
+        connect_at_init += " "
+    if arguments["--hw-dsr-dtr"]:
+        connect_at_init += " " + arguments["--hw-dsr-dtr"]
     else:
-        connect_at_init +=(' ')
-    if arguments ['--timeout']:
-        connect_at_init += (' ' + arguments ['--timeout'] )
+        connect_at_init += " "
+    if arguments["--timeout"]:
+        connect_at_init += " " + arguments["--timeout"]
     else:
-        connect_at_init +=(' ')
+        connect_at_init += " "
 
     if 0 < len(connect_at_init):
         shell.do_serial_open(connect_at_init)
@@ -640,12 +692,15 @@ def init(arguments = {}):
 
     return shell
 
+
 def set_debug(debug=False):
     if debug:
         LOGGER.setLevel(logging.DEBUG)
 
+
 def set_history_length(length):
     rl.set_history_length(length)
+
 
 def get_history_length():
     length = rl.get_history_length()
@@ -653,15 +708,16 @@ def get_history_length():
         return "No limit"
     return length
 
+
 def main():
     arguments = docopt(__doc__)
-    set_debug(arguments ['-d'] or arguments ['--debug'])
+    set_debug(arguments["-d"] or arguments["--debug"])
 
     shell = init(arguments)
     run(shell)
 
-if __name__ == '__main__':
-    main()
-    #shell = init(arguments)
-    #run()
 
+if __name__ == "__main__":
+    main()
+    # shell = init(arguments)
+    # run()
