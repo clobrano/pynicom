@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 A Minicom like shell in Python
 author: Carlo Lobrano
@@ -567,7 +567,7 @@ def run(shell):
     except KeyboardInterrupt:
         shell.save_history()
         logi("Keyboard interrupt")
-    except IOError, err:
+    except IOError as err:
         loge(err)
         logi("Try running with superuser privilegies")
 
@@ -592,7 +592,7 @@ def init(arguments = {}):
                 add_do_command(known_commands, Pynicom)
                 shell._cmd_dict = known_commands
                 logi('Dictionary loaded')
-    except IOError, err:
+    except IOError as err:
         if errno.ENOENT != err.errno:
             loge('IOERROR accessing %s: %s' % (DICTIONARY, err))
             sys.exit(1)
