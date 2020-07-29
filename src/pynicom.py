@@ -28,10 +28,10 @@ except ImportError:
 rl.set_completer_delims(' \t\n"\\\'`@$><=;|&{(?+#/%')
 
 LOGGER = logging.getLogger('pynicom')
-LOGI = lambda x: LOGGER.info(x)
-LOGE = lambda x: LOGGER.error(x)
-LOGW = lambda x: LOGGER.warn(x)
-LOGD = lambda x: LOGGER.debug(x)
+LOGI = LOGGER.info
+LOGE = LOGGER.error
+LOGW = LOGGER.warn
+LOGD = LOGGER.debug
 
 PYTHON3 = sys.version_info > (2.7, 0)
 HOME = os.path.expanduser('~')
